@@ -140,6 +140,10 @@
     <Compile Include="UI\Fragments\CreateTagDialogFragment.cs" />
     <Compile Include="UI\Views\SnappyLayout.cs" />
     <Compile Include="UI\Utils\Pool.cs" />
+    <Compile Include="Net\HomescreenWidgetProvider.cs" />
+    <Compile Include="Net\WidgetService.cs" />
+    <Compile Include="UI\Activities\WidgetActivity.cs" />
+    <Compile Include="UI\Components\WidgetComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -563,6 +567,8 @@
     <AndroidResource Include="Resources\layout\PieChartEmpty.axml" />
     <AndroidResource Include="Resources\layout\PieChartLoading.axml" />
     <AndroidResource Include="Resources\layout\PieChartStats.axml" />
+    <AndroidResource Include="Resources\xml\widget_info.xml" />
+    <AndroidResource Include="Resources\layout\homescreen_widget.axml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <Import Project="../packages/XamGuard.1.0.3/Proguard.targets" Condition="'$(Configuration)' != 'Debug'" />
@@ -593,6 +599,7 @@
     <Folder Include="UI\Text\" />
     <Folder Include="Analytics\" />
     <Folder Include="Logging\" />
+    <Folder Include="Resources\xml\" />
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\fonts\Roboto-Light.ttf" />

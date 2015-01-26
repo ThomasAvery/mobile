@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Android.App;
+using Android.Appwidget;
 using Android.Content;
+using Android.Graphics;
 using Android.OS;
 using Android.Widget;
-using Android.Appwidget;
 using Toggl.Phoebe.Data;
+using Toggl.Phoebe.Data.DataObjects;
 using XPlatUtils;
-using Android.Graphics;
-using System.Threading.Tasks;
 
 namespace Toggl.Joey.Net
 {
@@ -21,18 +22,50 @@ namespace Toggl.Joey.Net
         private int[] appWidgetIds;
         public const string WidgetCommand = "command";
         public const string CommandInitial = "initial";
-        public const string CommandStart = "start";
-        public const string CommandStop = "stop";
+        public const string CommandActionButton = "actionButton";
 
         public override void OnStart (Intent intent, int startId)
         {
             base.OnStart (intent, startId);
             context = this;
-            if (intent != null && intent.Action.Equals (CommandStart)) {
-                StartEntryAndTogglApp ();
-            }
             appWidgetIds = intent.GetIntArrayExtra (HomescreenWidgetProvider.ExtraAppWidgetIds);
+            if (intent.Action != null) {
+                if (intent.Action == CommandActionButton) {
+                    if (CurrentState ==TimeEntryState.Running) {
+                        StopRunning();
+                        return;
+                    } else {
+                        StartBlankRunning();
+                        return;
+                    }
+                }
+            }
             Pulse ();
+        }
+
+        private void StopRunning()
+        {
+            var stopIntent = new Intent (context, typeof (StopRunningTimeEntryService.Receiver));
+            context.SendBroadcast (stopIntent);
+        }
+
+        private void StartBlankRunning()
+        {
+            var startIntent = new Intent (context, typeof (StartNewTimeEntryService.Receiver));
+            context.SendBroadcast (startIntent);
+            LaunchTogglApp();
+        }
+
+        private void LaunchTogglApp()
+        {
+            var startAppIntent = new Intent ("android.intent.action.MAIN");
+            startAppIntent.AddCategory ("android.intent.category.LAUNCHER");
+            startAppIntent.AddFlags (ActivityFlags.NewTask);
+            startAppIntent.SetComponent (new ComponentName (context.PackageName, "toggl.joey.ui.activities.MainDrawerActivity"));
+            var startBundle = new Bundle ();
+            startBundle.PutString ("testKey", "testValue");
+            startAppIntent.PutExtras (startBundle);
+            context.StartActivity (startAppIntent);
         }
 
         private void EnsureAdapter()
@@ -45,14 +78,12 @@ namespace Toggl.Joey.Net
                 manager = AppWidgetManager.GetInstance (this.ApplicationContext);
             }
         }
-        private void StartEntryAndTogglApp()
+
+        private PendingIntent ActionButtonIntent()
         {
-
-        }
-
-        private void AttachEvents()
-        {
-
+            var actionButtonIntent = new Intent (context, typeof (WidgetService));
+            actionButtonIntent.SetAction (CommandActionButton);
+            return PendingIntent.GetService (context, 0, actionButtonIntent, PendingIntentFlags.UpdateCurrent);
         }
 
         private async void Pulse ()
@@ -85,24 +116,9 @@ namespace Toggl.Joey.Net
                 views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Color.Green);
                 views.SetInt (Resource.Id.WidgetActionButton, "setText", Resource.String.TimerStartButtonText);
             }
-            var startAppIntent = new Intent ("android.intent.action.MAIN");
-            startAppIntent.AddCategory ("android.intent.category.LAUNCHER");
-            startAppIntent.AddFlags (ActivityFlags.NoAnimation);
-            startAppIntent.SetComponent (new ComponentName (context.PackageName, "toggl.joey.ui.activities.MainDrawerActivity"));
-            var startBundle = new Bundle ();
-            startBundle.PutString ("testKey", "testValue");
-            startAppIntent.PutExtras (startBundle);
-            var pendingIntent = PendingIntent.GetActivity (context, 0, startAppIntent, 0);
-            views.SetOnClickPendingIntent (Resource.Id.WidgetActionButton, pendingIntent);
+            views.SetOnClickPendingIntent (Resource.Id.WidgetActionButton, ActionButtonIntent());
             views.SetTextViewText (Resource.Id.WidgetDuration, CurrentDuration());
             remoteViews = views;
-        }
-
-        private void StopRunningTimeEntry()
-        {
-            EnsureAdapter();
-            var activeTimeEntryData = timeEntryManager.Active;
-            activeTimeEntryData.StopTime = DateTime.Now;
         }
 
         private string CurrentDuration()
@@ -115,10 +131,19 @@ namespace Toggl.Joey.Net
             return duration.ToString (@"hh\:mm\:ss");
         }
 
+        private TimeEntryData ActiveTimeEntryData
+        {
+            get {
+                if (timeEntryManager == null) {
+                    return null;
+                }
+                return timeEntryManager.Active;
+            }
+        }
+
         public override IBinder OnBind (Intent intent)
         {
             return null;
         }
     }
 }
-

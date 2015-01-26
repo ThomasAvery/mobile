@@ -10,12 +10,36 @@
         android:layout_height="20dp"
         android:id="@+id/WidgetDuration"
         android:textColor="@android:color/white"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="5dp"
         android:layout_gravity="center" />
+    <LinearLayout
+        android:id="@+id/WidgetRunningEntry"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:visibility="gone"
+        android:layout_gravity="center">
+        <ImageView
+            android:id="@+id/WidgetColorView"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:paddingTop="4dp"
+            android:paddingRight="6dp"
+            android:src="@drawable/widget_color_shape" />
+        <TextView
+            android:id="@+id/WidgetRunningDescriptionTextView"
+            android:layout_height="wrap_content"
+            android:textSize="12dp"
+            android:layout_width="wrap_content"
+            android:text="Description"
+            android:textColor="#ffffffff" />
+    </LinearLayout>
     <Button
         android:text="@string/TimerStartButtonText"
         android:layout_width="100dp"
         android:layout_height="30dp"
+        android:textSize="15dp"
         android:id="@+id/WidgetActionButton"
         android:background="@color/bright_green"
         android:textColor="@android:color/white"

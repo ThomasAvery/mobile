@@ -570,6 +570,7 @@
     <AndroidResource Include="Resources\layout\PieChartStats.axml" />
     <AndroidResource Include="Resources\xml\widget_info.xml" />
     <AndroidResource Include="Resources\layout\homescreen_widget.axml" />
+    <AndroidResource Include="Resources\drawable\widget_color_shape.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <Import Project="../packages/XamGuard.1.0.3/Proguard.targets" Condition="'$(Configuration)' != 'Debug'" />

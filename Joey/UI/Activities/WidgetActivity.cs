@@ -13,15 +13,15 @@ using Android.Widget;
 
 namespace Toggl.Joey.UI.Activities
 {
-[Activity(Label = "WidgetActivity")]            
-public class WidgetActivity : Activity
-{
-    protected override void OnCreate(Bundle bundle)
+    [Activity (Label = "WidgetActivity")]
+    public class WidgetActivity : Activity
     {
-    base.OnCreate(bundle);
+        protected override void OnCreate (Bundle bundle)
+        {
+            base.OnCreate (bundle);
 
-    // Create your application here
+            // Create your application here
+        }
     }
-}
 }
 

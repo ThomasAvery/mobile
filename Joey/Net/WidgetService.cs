@@ -62,9 +62,6 @@ namespace Toggl.Joey.Net
             startAppIntent.AddCategory ("android.intent.category.LAUNCHER");
             startAppIntent.AddFlags (ActivityFlags.NewTask);
             startAppIntent.SetComponent (new ComponentName (context.PackageName, "toggl.joey.ui.activities.MainDrawerActivity"));
-            var startBundle = new Bundle ();
-            startBundle.PutString ("testKey", "testValue");
-            startAppIntent.PutExtras (startBundle);
             context.StartActivity (startAppIntent);
         }
 
@@ -88,6 +85,7 @@ namespace Toggl.Joey.Net
 
         private async void Pulse ()
         {
+            Console.WriteLine ("Pulse");
             RefreshViews ();
 
             manager.UpdateAppWidget (appWidgetIds, remoteViews);
@@ -100,7 +98,10 @@ namespace Toggl.Joey.Net
         private TimeEntryState CurrentState
         {
             get {
-                return timeEntryManager.Active.State;
+                if (timeEntryManager != null && timeEntryManager.Active != null) {
+                    return timeEntryManager.Active.State;
+                }
+                return TimeEntryState.New;
             }
         }
 
@@ -108,27 +109,43 @@ namespace Toggl.Joey.Net
         {
             EnsureAdapter();
             RemoteViews views = new RemoteViews (context.PackageName, Resource.Layout.homescreen_widget);
-
+            Console.WriteLine ("state: {0}", CurrentState);
             if (CurrentState == TimeEntryState.Running) {
                 views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Color.Red);
                 views.SetInt (Resource.Id.WidgetActionButton, "setText", Resource.String.TimerStopButtonText);
+                views.SetViewVisibility (Resource.Id.WidgetRunningEntry, Android.Views.ViewStates.Visible);
+                views.SetTextViewText (Resource.Id.WidgetRunningDescriptionTextView, CurrentDescription);
             } else {
                 views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Color.Green);
                 views.SetInt (Resource.Id.WidgetActionButton, "setText", Resource.String.TimerStartButtonText);
+                views.SetViewVisibility (Resource.Id.WidgetRunningEntry, Android.Views.ViewStates.Gone);
             }
             views.SetOnClickPendingIntent (Resource.Id.WidgetActionButton, ActionButtonIntent());
-            views.SetTextViewText (Resource.Id.WidgetDuration, CurrentDuration());
+            views.SetTextViewText (Resource.Id.WidgetDuration, CurrentDuration);
             remoteViews = views;
         }
 
-        private string CurrentDuration()
+        private string CurrentDescription
         {
-            if (CurrentState != TimeEntryState.Running) {
-                return "00:00:00";
+            get {
+                if (ActiveTimeEntryData != null && ActiveTimeEntryData.Description != null && ActiveTimeEntryData.Description.Length > 0) {
+                    Console.WriteLine ("current entry: {0}", ActiveTimeEntryData.Description);
+                    return ActiveTimeEntryData.Description;
+                }
+                return Resources.GetText (Resource.String.RunningWidgetNoDescription);
             }
-            var activeTE = timeEntryManager.Active;
-            var duration = DateTime.Now - activeTE.StartTime;
-            return duration.ToString (@"hh\:mm\:ss");
+        }
+
+        private string CurrentDuration
+        {
+            get {
+                if (CurrentState != TimeEntryState.Running) {
+                    return "00:00:00";
+                }
+                var activeTE = timeEntryManager.Active;
+                var duration = DateTime.Now - activeTE.StartTime;
+                return duration.ToString (@"hh\:mm\:ss");
+            }
         }
 
         private TimeEntryData ActiveTimeEntryData

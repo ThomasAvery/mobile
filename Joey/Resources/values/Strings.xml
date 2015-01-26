@@ -174,4 +174,5 @@
     <string name="ReportsTotalBanner">Total</string>
     <string name="ReportsBillableBanner">Billable</string>
     <string name="ReportsSyncFailed">Oops! Failed to load data</string>
+    <string name="RunningWidgetNoDescription">(no description)</string>    
 </resources>

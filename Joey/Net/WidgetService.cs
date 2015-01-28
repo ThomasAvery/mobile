@@ -9,6 +9,8 @@ using Android.Widget;
 using Toggl.Phoebe.Data;
 using Toggl.Phoebe.Data.DataObjects;
 using XPlatUtils;
+using Toggl.Phoebe.Data.Models;
+using Toggl.Phoebe;
 
 namespace Toggl.Joey.Net
 {
@@ -20,6 +22,7 @@ namespace Toggl.Joey.Net
         private RemoteViews remoteViews;
         private AppWidgetManager manager;
         private int[] appWidgetIds;
+        private int runningProjectColor;
         public const string WidgetCommand = "command";
         public const string CommandInitial = "initial";
         public const string CommandActionButton = "actionButton";
@@ -43,26 +46,14 @@ namespace Toggl.Joey.Net
             Pulse ();
         }
 
-        private void StopRunning()
+        private Intent StopRunning()
         {
-            var stopIntent = new Intent (context, typeof (StopRunningTimeEntryService.Receiver));
-            context.SendBroadcast (stopIntent);
+            return new Intent (context, typeof (StopRunningTimeEntryService.Receiver));
         }
 
-        private void StartBlankRunning()
+        private Intent StartBlankRunning()
         {
-            var startIntent = new Intent (context, typeof (StartNewTimeEntryService.Receiver));
-            context.SendBroadcast (startIntent);
-            LaunchTogglApp();
-        }
-
-        private void LaunchTogglApp()
-        {
-            var startAppIntent = new Intent ("android.intent.action.MAIN");
-            startAppIntent.AddCategory ("android.intent.category.LAUNCHER");
-            startAppIntent.AddFlags (ActivityFlags.NewTask);
-            startAppIntent.SetComponent (new ComponentName (context.PackageName, "toggl.joey.ui.activities.MainDrawerActivity"));
-            context.StartActivity (startAppIntent);
+            return new Intent (context, typeof (StartNewTimeEntryService.Receiver));
         }
 
         private void EnsureAdapter()
@@ -78,14 +69,15 @@ namespace Toggl.Joey.Net
 
         private PendingIntent ActionButtonIntent()
         {
-            var actionButtonIntent = new Intent (context, typeof (WidgetService));
-            actionButtonIntent.SetAction (CommandActionButton);
-            return PendingIntent.GetService (context, 0, actionButtonIntent, PendingIntentFlags.UpdateCurrent);
+            var actionButtonIntent = StartBlankRunning ();
+            if (CurrentState == TimeEntryState.Running) {
+                actionButtonIntent = StopRunning ();
+            }
+            return PendingIntent.GetBroadcast (context, 0, actionButtonIntent, PendingIntentFlags.UpdateCurrent);
         }
 
         private async void Pulse ()
         {
-            Console.WriteLine ("Pulse");
             RefreshViews ();
 
             manager.UpdateAppWidget (appWidgetIds, remoteViews);
@@ -109,10 +101,10 @@ namespace Toggl.Joey.Net
         {
             EnsureAdapter();
             RemoteViews views = new RemoteViews (context.PackageName, Resource.Layout.homescreen_widget);
-            Console.WriteLine ("state: {0}", CurrentState);
             if (CurrentState == TimeEntryState.Running) {
                 views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Color.Red);
                 views.SetInt (Resource.Id.WidgetActionButton, "setText", Resource.String.TimerStopButtonText);
+                views.SetInt (Resource.Id.WidgetColorView, "setColorFilter", RunningProjectColor);
                 views.SetViewVisibility (Resource.Id.WidgetRunningEntry, Android.Views.ViewStates.Visible);
                 views.SetTextViewText (Resource.Id.WidgetRunningDescriptionTextView, CurrentDescription);
             } else {
@@ -120,21 +112,59 @@ namespace Toggl.Joey.Net
                 views.SetInt (Resource.Id.WidgetActionButton, "setText", Resource.String.TimerStartButtonText);
                 views.SetViewVisibility (Resource.Id.WidgetRunningEntry, Android.Views.ViewStates.Gone);
             }
+            FetchRecentEntries (3);
             views.SetOnClickPendingIntent (Resource.Id.WidgetActionButton, ActionButtonIntent());
             views.SetTextViewText (Resource.Id.WidgetDuration, CurrentDuration);
             remoteViews = views;
+        }
+
+        private async void FetchProjectColor()
+        {
+            var store = ServiceContainer.Resolve<IDataStore> ();
+            var project = await store.Table<ProjectData> ()
+                          .QueryAsync (r => r.Id == ActiveTimeEntryData.ProjectId);
+            runningProjectColor = project.Count > 0 ?  project [0].Color : 0;
+        }
+
+        private async void FetchRecentEntries (int maxCount = 3)
+        {
+            var store = ServiceContainer.Resolve<IDataStore> ();
+            // Group only items in the past 9 days
+            var queryStartDate = Time.UtcNow - TimeSpan.FromDays (9);
+            var query = store.Table<TimeEntryData> ()
+                        .OrderBy (r => r.StartTime, false)
+                        .Take (maxCount)
+                        .Where (r => r.DeletedAt == null
+                                && r.UserId == ActiveTimeEntryData.UserId
+                                && r.State != TimeEntryState.New
+                                && r.StartTime >= queryStartDate);
+            var entries = await query.QueryAsync ().ConfigureAwait (false);
+
+            foreach (var entry in entries) {
+                Console.WriteLine ("entry: {0}", entry.Description);
+            }
         }
 
         private string CurrentDescription
         {
             get {
                 if (ActiveTimeEntryData != null && ActiveTimeEntryData.Description != null && ActiveTimeEntryData.Description.Length > 0) {
-                    Console.WriteLine ("current entry: {0}", ActiveTimeEntryData.Description);
                     return ActiveTimeEntryData.Description;
                 }
                 return Resources.GetText (Resource.String.RunningWidgetNoDescription);
             }
         }
+
+        private int RunningProjectColor
+        {
+            get {
+//                if (runningProjectColor) {
+                FetchProjectColor (); // too much for every call.
+//                }
+                return Color.ParseColor (ProjectModel.HexColors [runningProjectColor % ProjectModel.HexColors.Length]);
+            }
+        }
+
 
         private string CurrentDuration
         {

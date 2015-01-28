@@ -15,6 +15,7 @@ namespace Toggl.Joey
     public sealed class StartNewTimeEntryService : Service
     {
         private static readonly string Tag = "StartNewTimeEntryService";
+        private Context context;
 
         public StartNewTimeEntryService () : base ()
         {
@@ -34,12 +35,21 @@ namespace Toggl.Joey
                 if (app != null) {
                     app.InitializeComponents ();
                 }
-
                 await startTask;
+                LaunchTogglApp();
             } finally {
                 Receiver.CompleteWakefulIntent (intent);
                 StopSelf (startId);
             }
+        }
+
+        private void LaunchTogglApp()
+        {
+            var startAppIntent = new Intent ("android.intent.action.MAIN");
+            startAppIntent.AddCategory ("android.intent.category.LAUNCHER");
+            startAppIntent.AddFlags (ActivityFlags.NewTask);
+            startAppIntent.SetComponent (new ComponentName (ApplicationContext.PackageName, "toggl.joey.ui.activities.MainDrawerActivity"));
+            ApplicationContext.StartActivity (startAppIntent);
         }
 
         private static async Task StartNewRunning ()

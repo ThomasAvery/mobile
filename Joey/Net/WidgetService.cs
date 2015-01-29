@@ -12,6 +12,7 @@ using XPlatUtils;
 using Toggl.Phoebe.Data.Models;
 using Toggl.Phoebe;
 using System.Collections.Generic;
+using Toggl.Phoebe.Net;
 
 namespace Toggl.Joey.Net
 {
@@ -82,7 +83,7 @@ namespace Toggl.Joey.Net
         private async void Pulse ()
         {
             RefreshViews ();
-
+            Console.WriteLine ("PULSE");
             manager.UpdateAppWidget (appWidgetIds, remoteViews);
             manager.NotifyAppWidgetViewDataChanged (appWidgetIds, remoteViews.LayoutId);
 
@@ -115,7 +116,11 @@ namespace Toggl.Joey.Net
                 views.SetInt (Resource.Id.WidgetActionButton, "setText", Resource.String.TimerStartButtonText);
                 views.SetViewVisibility (Resource.Id.WidgetRunningEntry, Android.Views.ViewStates.Gone);
             }
-            FetchRecentEntries (3);
+//            FetchRecentEntries (3);
+            Intent adapterServiceIntent = new Intent (ApplicationContext, typeof (WidgetListService));
+            adapterServiceIntent.PutExtra (AppWidgetManager.ExtraAppwidgetIds, appWidgetIds);
+            Console.WriteLine ("Setting remote adapter");
+//            remoteViews.SetRemoteAdapter(appWidgetIds[0], Resource.Id.WidgetRecentEntriesListView, adapterServiceIntent);
             views.SetOnClickPendingIntent (Resource.Id.WidgetActionButton, ActionButtonIntent());
             views.SetTextViewText (Resource.Id.WidgetDuration, CurrentDuration);
             remoteViews = views;
@@ -166,7 +171,6 @@ namespace Toggl.Joey.Net
             }
         }
 
-
         private string CurrentDuration
         {
             get {
@@ -195,29 +199,73 @@ namespace Toggl.Joey.Net
         }
     }
 
-    public class ListViewAppService : RemoteViewsService
+    public class WidgetListViewService : RemoteViewsService
     {
 
+        public override IRemoteViewsFactory OnGetViewFactory (Intent intent)
+        {
+            Console.WriteLine ("OnGetViewFactory");
+            return new WidgetListService (ApplicationContext, intent);
+        }
     }
 
-
-    public class ListProvider : RemoteViewsService.IRemoteViewsFactory
+    public class WidgetListService : RemoteViewsService.IRemoteViewsFactory
     {
         private List<TimeEntryData> dataObject = new List<TimeEntryData> ();
         private Context context = null;
         private int appWidgetId;
 
-        public ListProvider (Context ctx, Intent intent)
+        public WidgetListService (Context ctx, Intent intent)
         {
+            Console.WriteLine ("WidgetService");
             context = ctx;
-            appWidgetId = intent.GetIntExtra (AppWidgetManager.ExtraAppwidgetId, AppWidgetManager.InvalidAppwidgetId);
-
-            populateListItem();
+            appWidgetId = intent.GetIntExtra (AppWidgetManager.ExtraAppwidgetIds, AppWidgetManager.InvalidAppwidgetId);
         }
 
-        private void populateListItem()
+        public long GetItemId (int position)
         {
+            return position;
+        }
 
+        public RemoteViews GetViewAt (int position)
+        {
+            Console.WriteLine ("WidgetService GetViewAt");
+            var remoteView = new RemoteViews (context.PackageName, Resource.Layout.RecentTimeEntryListItem);
+            var timeEntry = dataObject [position]; // Should check if exists.
+            var duration = DateTime.Now - timeEntry.StartTime;
+            remoteView.SetTextViewText (Resource.Id.DescriptionTextView, timeEntry.Description);
+            remoteView.SetTextViewText (Resource.Id.DurationTextView, duration.ToString (@"hh\:mm\:ss"));
+            return remoteView;
+        }
+
+        public void OnCreate ()
+        {
+        }
+
+        public void OnDataSetChanged ()
+        {
+        }
+
+        public void OnDestroy ()
+        {
+        }
+
+        private async void FetchRecentEntries (int maxCount = 3)
+        {
+            var store = ServiceContainer.Resolve<IDataStore> ();
+            var user = ServiceContainer.Resolve<AuthManager> ().User;
+
+            // Group only items in the past 9 days
+            var queryStartDate = Time.UtcNow - TimeSpan.FromDays (9);
+            var query = store.Table<TimeEntryData> ()
+                        .OrderBy (r => r.StartTime, false)
+                        .Take (maxCount)
+                        .Where (r => r.DeletedAt == null
+                                && r.UserId == user.Id
+                                && r.State != TimeEntryState.New
+                                && r.StartTime >= queryStartDate);
+            var entries = await query.QueryAsync ().ConfigureAwait (false);
+            dataObject = entries;
         }
 
         public int Count
@@ -227,26 +275,36 @@ namespace Toggl.Joey.Net
             }
         }
 
-        public long getItemId (int position)
+        public bool HasStableIds
         {
-            return position;
+            get {
+                return true;
+            }
         }
 
-        /*
-        *Similar to getView of Adapter where instead of View
-        *we return RemoteViews
-        *
-        */
-        @Override
-        public RemoteViews getViewAt (int position)
+        public RemoteViews LoadingView
         {
-            final RemoteViews remoteView = new RemoteViews (
-                context.getPackageName(), R.layout.list_row);
-            ListItem listItem = listItemList.get (position);
-            remoteView.setTextViewText (R.id.heading, listItem.heading);
-            remoteView.setTextViewText (R.id.content, listItem.content);
+            get {
+                return (RemoteViews) null;
+            }
+        }
 
-            return remoteView;
+        public int ViewTypeCount
+        {
+            get {
+                return 1;
+            }
+        }
+
+        public void Dispose ()
+        {
+        }
+
+        public IntPtr Handle
+        {
+            get {
+                return (IntPtr)null;
+            }
         }
     }
 

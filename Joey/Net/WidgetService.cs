@@ -11,6 +11,7 @@ using Toggl.Phoebe.Data.DataObjects;
 using XPlatUtils;
 using Toggl.Phoebe.Data.Models;
 using Toggl.Phoebe;
+using System.Collections.Generic;
 
 namespace Toggl.Joey.Net
 {
@@ -26,6 +27,8 @@ namespace Toggl.Joey.Net
         public const string WidgetCommand = "command";
         public const string CommandInitial = "initial";
         public const string CommandActionButton = "actionButton";
+        private List<TimeEntryData> recentTimeEntries;
+        private ListView recentEntriesListView;
 
         public override void OnStart (Intent intent, int startId)
         {
@@ -129,6 +132,7 @@ namespace Toggl.Joey.Net
         private async void FetchRecentEntries (int maxCount = 3)
         {
             var store = ServiceContainer.Resolve<IDataStore> ();
+
             // Group only items in the past 9 days
             var queryStartDate = Time.UtcNow - TimeSpan.FromDays (9);
             var query = store.Table<TimeEntryData> ()
@@ -139,10 +143,7 @@ namespace Toggl.Joey.Net
                                 && r.State != TimeEntryState.New
                                 && r.StartTime >= queryStartDate);
             var entries = await query.QueryAsync ().ConfigureAwait (false);
-
-            foreach (var entry in entries) {
-                Console.WriteLine ("entry: {0}", entry.Description);
-            }
+            recentTimeEntries = entries;
         }
 
         private string CurrentDescription
@@ -193,4 +194,60 @@ namespace Toggl.Joey.Net
             return null;
         }
     }
+
+    public class ListViewAppService : RemoteViewsService
+    {
+
+    }
+
+
+    public class ListProvider : RemoteViewsService.IRemoteViewsFactory
+    {
+        private List<TimeEntryData> dataObject = new List<TimeEntryData> ();
+        private Context context = null;
+        private int appWidgetId;
+
+        public ListProvider (Context ctx, Intent intent)
+        {
+            context = ctx;
+            appWidgetId = intent.GetIntExtra (AppWidgetManager.ExtraAppwidgetId, AppWidgetManager.InvalidAppwidgetId);
+
+            populateListItem();
+        }
+
+        private void populateListItem()
+        {
+
+        }
+
+        public int Count
+        {
+            get {
+                return dataObject.Count;
+            }
+        }
+
+        public long getItemId (int position)
+        {
+            return position;
+        }
+
+        /*
+        *Similar to getView of Adapter where instead of View
+        *we return RemoteViews
+        *
+        */
+        @Override
+        public RemoteViews getViewAt (int position)
+        {
+            final RemoteViews remoteView = new RemoteViews (
+                context.getPackageName(), R.layout.list_row);
+            ListItem listItem = listItemList.get (position);
+            remoteView.setTextViewText (R.id.heading, listItem.heading);
+            remoteView.setTextViewText (R.id.content, listItem.content);
+
+            return remoteView;
+        }
+    }
+
 }

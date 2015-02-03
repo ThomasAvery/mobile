@@ -17,11 +17,6 @@ namespace Toggl.Joey.Net
         private Context context;
         public static readonly string ExtraAppWidgetIds = "appWidgetIds";
 
-        public override void OnReceive (Context context, Intent intent)
-        {
-            base.OnReceive (context, intent);
-        }
-
         public override void OnUpdate (Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
         {
             this.context = context;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Appwidget;
@@ -6,13 +7,13 @@ using Android.Content;
 using Android.Graphics;
 using Android.OS;
 using Android.Widget;
+using Toggl.Phoebe;
 using Toggl.Phoebe.Data;
 using Toggl.Phoebe.Data.DataObjects;
-using XPlatUtils;
 using Toggl.Phoebe.Data.Models;
-using Toggl.Phoebe;
-using System.Collections.Generic;
 using Toggl.Phoebe.Net;
+using XPlatUtils;
+using Android.Content.Res;
 
 namespace Toggl.Joey.Net
 {
@@ -28,14 +29,14 @@ namespace Toggl.Joey.Net
         public const string WidgetCommand = "command";
         public const string CommandInitial = "initial";
         public const string CommandActionButton = "actionButton";
-        private List<TimeEntryData> recentTimeEntries;
-        private ListView recentEntriesListView;
 
         public override void OnStart (Intent intent, int startId)
         {
             base.OnStart (intent, startId);
             context = this;
-            appWidgetIds = intent.GetIntArrayExtra (HomescreenWidgetProvider.ExtraAppWidgetIds);
+            if (intent.Extras.ContainsKey (HomescreenWidgetProvider.ExtraAppWidgetIds)) {
+                appWidgetIds = intent.GetIntArrayExtra (HomescreenWidgetProvider.ExtraAppWidgetIds);
+            }
             if (intent.Action != null) {
                 if (intent.Action == CommandActionButton) {
                     if (CurrentState ==TimeEntryState.Running) {
@@ -83,7 +84,6 @@ namespace Toggl.Joey.Net
         private async void Pulse ()
         {
             RefreshViews ();
-            Console.WriteLine ("PULSE");
             manager.UpdateAppWidget (appWidgetIds, remoteViews);
             manager.NotifyAppWidgetViewDataChanged (appWidgetIds, remoteViews.LayoutId);
 
@@ -105,22 +105,31 @@ namespace Toggl.Joey.Net
         {
             EnsureAdapter();
             RemoteViews views = new RemoteViews (context.PackageName, Resource.Layout.homescreen_widget);
+
             if (CurrentState == TimeEntryState.Running) {
-                views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Color.Red);
+                views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Resources.GetColor (Resource.Color.bright_red));
                 views.SetInt (Resource.Id.WidgetActionButton, "setText", Resource.String.TimerStopButtonText);
                 views.SetInt (Resource.Id.WidgetColorView, "setColorFilter", RunningProjectColor);
                 views.SetViewVisibility (Resource.Id.WidgetRunningEntry, Android.Views.ViewStates.Visible);
                 views.SetTextViewText (Resource.Id.WidgetRunningDescriptionTextView, CurrentDescription);
             } else {
-                views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Color.Green);
+                views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Resources.GetColor (Resource.Color.bright_green));
                 views.SetInt (Resource.Id.WidgetActionButton, "setText", Resource.String.TimerStartButtonText);
-                views.SetViewVisibility (Resource.Id.WidgetRunningEntry, Android.Views.ViewStates.Gone);
+                views.SetViewVisibility (Resource.Id.WidgetRunningEntry, Android.Views.ViewStates.Invisible);
             }
-//            FetchRecentEntries (3);
-            Intent adapterServiceIntent = new Intent (ApplicationContext, typeof (WidgetListService));
-            adapterServiceIntent.PutExtra (AppWidgetManager.ExtraAppwidgetIds, appWidgetIds);
-            Console.WriteLine ("Setting remote adapter");
-//            remoteViews.SetRemoteAdapter(appWidgetIds[0], Resource.Id.WidgetRecentEntriesListView, adapterServiceIntent);
+
+            Intent adapterServiceIntent = new Intent (context, typeof (WidgetListViewService));
+            adapterServiceIntent.PutExtra (AppWidgetManager.ExtraAppwidgetId, appWidgetIds[0]);
+            adapterServiceIntent.SetData (Android.Net.Uri.Parse (adapterServiceIntent.ToUri (Intent.UriIntentScheme)));
+            views.SetRemoteAdapter (appWidgetIds[0], Resource.Id.WidgetRecentEntriesListView, adapterServiceIntent);
+
+            Intent listItemIntent = new Intent (context, typeof (StartNewTimeEntryService.Receiver));
+            listItemIntent.SetAction ("startEntry");
+            listItemIntent.SetData (Android.Net.Uri.Parse (listItemIntent.ToUri (Intent.UriIntentScheme)));
+            var pendingIntent = PendingIntent.GetBroadcast (context, 0, listItemIntent, PendingIntentFlags.UpdateCurrent);
+            views.SetPendingIntentTemplate (Resource.Id.WidgetRecentEntriesListView, pendingIntent);
+
+            manager.NotifyAppWidgetViewDataChanged (appWidgetIds[0], Resource.Id.WidgetRecentEntriesListView);
             views.SetOnClickPendingIntent (Resource.Id.WidgetActionButton, ActionButtonIntent());
             views.SetTextViewText (Resource.Id.WidgetDuration, CurrentDuration);
             remoteViews = views;
@@ -132,23 +141,6 @@ namespace Toggl.Joey.Net
             var project = await store.Table<ProjectData> ()
                           .QueryAsync (r => r.Id == ActiveTimeEntryData.ProjectId);
             runningProjectColor = project.Count > 0 ?  project [0].Color : 0;
-        }
-
-        private async void FetchRecentEntries (int maxCount = 3)
-        {
-            var store = ServiceContainer.Resolve<IDataStore> ();
-
-            // Group only items in the past 9 days
-            var queryStartDate = Time.UtcNow - TimeSpan.FromDays (9);
-            var query = store.Table<TimeEntryData> ()
-                        .OrderBy (r => r.StartTime, false)
-                        .Take (maxCount)
-                        .Where (r => r.DeletedAt == null
-                                && r.UserId == ActiveTimeEntryData.UserId
-                                && r.State != TimeEntryState.New
-                                && r.StartTime >= queryStartDate);
-            var entries = await query.QueryAsync ().ConfigureAwait (false);
-            recentTimeEntries = entries;
         }
 
         private string CurrentDescription
@@ -199,17 +191,16 @@ namespace Toggl.Joey.Net
         }
     }
 
+    [Service]
     public class WidgetListViewService : RemoteViewsService
     {
-
         public override IRemoteViewsFactory OnGetViewFactory (Intent intent)
         {
-            Console.WriteLine ("OnGetViewFactory");
             return new WidgetListService (ApplicationContext, intent);
         }
     }
 
-    public class WidgetListService : RemoteViewsService.IRemoteViewsFactory
+    public class WidgetListService : Java.Lang.Object, RemoteViewsService.IRemoteViewsFactory
     {
         private List<TimeEntryData> dataObject = new List<TimeEntryData> ();
         private Context context = null;
@@ -217,9 +208,9 @@ namespace Toggl.Joey.Net
 
         public WidgetListService (Context ctx, Intent intent)
         {
-            Console.WriteLine ("WidgetService");
             context = ctx;
             appWidgetId = intent.GetIntExtra (AppWidgetManager.ExtraAppwidgetIds, AppWidgetManager.InvalidAppwidgetId);
+            FetchRecentEntries (3);
         }
 
         public long GetItemId (int position)
@@ -229,11 +220,23 @@ namespace Toggl.Joey.Net
 
         public RemoteViews GetViewAt (int position)
         {
-            Console.WriteLine ("WidgetService GetViewAt");
-            var remoteView = new RemoteViews (context.PackageName, Resource.Layout.RecentTimeEntryListItem);
-            var timeEntry = dataObject [position]; // Should check if exists.
-            var duration = DateTime.Now - timeEntry.StartTime;
-            remoteView.SetTextViewText (Resource.Id.DescriptionTextView, timeEntry.Description);
+            var remoteView = new RemoteViews (context.PackageName, Resource.Layout.widget_list_item);
+            var timeEntry = dataObject [position]; // TODO: Should check if exists.
+            string description = String.IsNullOrEmpty (timeEntry.Description) ? "(no description)": timeEntry.Description;
+
+            var duration = GetDuration (timeEntry.StartTime, timeEntry.StopTime ?? DateTime.Now);
+            if (timeEntry.State == TimeEntryState.Running) {
+                remoteView.SetImageViewResource (Resource.Id.WidgetColorView, Resource.Drawable.IcWidgetStop);
+            }
+
+            var fillIntent = new Intent();
+            var TEBundle = new Bundle();
+            TEBundle.PutString ("guid", timeEntry.Id.ToString());
+            fillIntent.PutExtra ("startRecentEntry", TEBundle);
+            remoteView.SetOnClickFillInIntent (Resource.Id.WidgetContinueImageButton, fillIntent);
+
+            remoteView.SetTextViewText (Resource.Id.DescriptionTextView, description);
+            remoteView.SetTextViewText (Resource.Id.ProjectTextView, "(no project)");
             remoteView.SetTextViewText (Resource.Id.DurationTextView, duration.ToString (@"hh\:mm\:ss"));
             return remoteView;
         }
@@ -255,7 +258,6 @@ namespace Toggl.Joey.Net
             var store = ServiceContainer.Resolve<IDataStore> ();
             var user = ServiceContainer.Resolve<AuthManager> ().User;
 
-            // Group only items in the past 9 days
             var queryStartDate = Time.UtcNow - TimeSpan.FromDays (9);
             var query = store.Table<TimeEntryData> ()
                         .OrderBy (r => r.StartTime, false)
@@ -266,6 +268,19 @@ namespace Toggl.Joey.Net
                                 && r.StartTime >= queryStartDate);
             var entries = await query.QueryAsync ().ConfigureAwait (false);
             dataObject = entries;
+        }
+
+        private TimeSpan GetDuration (DateTime startTime, DateTime stopTime)
+        {
+            if (startTime == DateTime.MinValue) {
+                return TimeSpan.Zero;
+            }
+
+            var duration = stopTime - startTime;
+            if (duration < TimeSpan.Zero) {
+                duration = TimeSpan.Zero;
+            }
+            return duration;
         }
 
         public int Count
@@ -295,17 +310,5 @@ namespace Toggl.Joey.Net
                 return 1;
             }
         }
-
-        public void Dispose ()
-        {
-        }
-
-        public IntPtr Handle
-        {
-            get {
-                return (IntPtr)null;
-            }
-        }
     }
-
 }

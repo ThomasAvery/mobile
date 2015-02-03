@@ -4,21 +4,20 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
     <TextView
-        android:text="00:00:00"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_width="wrap_content"
-        android:layout_height="20dp"
         android:id="@+id/WidgetDuration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="00:00:00"
         android:textColor="@android:color/white"
-        android:layout_marginBottom="5dp"
-        android:layout_gravity="center" />
+        android:textAppearance="?android:attr/textAppearanceLarge" />
     <LinearLayout
         android:id="@+id/WidgetRunningEntry"
         android:orientation="horizontal"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
-        android:visibility="gone"
+        android:visibility="invisible"
+        android:layout_height="wrap_content"
         android:layout_gravity="center">
         <ImageView
             android:id="@+id/WidgetColorView"
@@ -37,16 +36,19 @@
     </LinearLayout>
     <Button
         android:text="@string/TimerStartButtonText"
-        android:layout_width="100dp"
-        android:layout_height="30dp"
-        android:textSize="15dp"
+        android:layout_width="90dp"
+        android:layout_height="34dp"
+        android:textSize="12dp"
         android:id="@+id/WidgetActionButton"
         android:background="@color/bright_green"
         android:textColor="@android:color/white"
         android:layout_gravity="center" />
     <ListView
         android:id="@+id/WidgetRecentEntriesListView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp" />
+        android:layout_marginTop="10dp"
+        android:dividerHeight="4dp"
+        android:divider="@android:color/transparent"
+        android:minHeight="40dp" />
 </LinearLayout>

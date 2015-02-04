@@ -140,11 +140,11 @@
     <Compile Include="UI\Fragments\CreateTagDialogFragment.cs" />
     <Compile Include="UI\Views\SnappyLayout.cs" />
     <Compile Include="UI\Utils\Pool.cs" />
-    <Compile Include="Net\HomescreenWidgetProvider.cs" />
     <Compile Include="Net\WidgetService.cs" />
     <Compile Include="UI\Activities\WidgetActivity.cs" />
     <Compile Include="UI\Components\WidgetComponent.cs" />
     <Compile Include="StartNewTimeEntryService.cs" />
+    <Compile Include="Net\WidgetProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -569,11 +569,8 @@
     <AndroidResource Include="Resources\layout\PieChartLoading.axml" />
     <AndroidResource Include="Resources\layout\PieChartStats.axml" />
     <AndroidResource Include="Resources\xml\widget_info.xml" />
-    <AndroidResource Include="Resources\layout\homescreen_widget.axml" />
     <AndroidResource Include="Resources\drawable\widget_color_shape.xml" />
     <AndroidResource Include="Resources\layout\widget_list_item.axml" />
-    <AndroidResource Include="Resources\drawable\WidgetListItemBackground.xml" />
-    <AndroidResource Include="Resources\drawable\WidgetListItemBackgroundLight.xml" />
     <AndroidResource Include="Resources\drawable-hdpi\IcWidgetStop.png" />
     <AndroidResource Include="Resources\drawable-hdpi\IcWidgetPlay.png" />
     <AndroidResource Include="Resources\drawable-mdpi\IcWidgetStop.png" />
@@ -582,6 +579,7 @@
     <AndroidResource Include="Resources\drawable-xhdpi\IcWidgetPlay.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\IcWidgetStop.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\IcWidgetPlay.png" />
+    <AndroidResource Include="Resources\layout\keyguard_widget.axml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <Import Project="../packages/XamGuard.1.0.3/Proguard.targets" Condition="'$(Configuration)' != 'Debug'" />

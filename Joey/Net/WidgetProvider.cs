@@ -12,7 +12,7 @@ namespace Toggl.Joey.Net
     [IntentFilter (new string [] { "android.appwidget.action.APPWIDGET_UPDATE" })]
     [MetaData ("android.appwidget.provider", Resource = "@xml/widget_info")]
 
-    public class HomescreenWidgetProvider : AppWidgetProvider
+    public class WidgetProvider : AppWidgetProvider
     {
         private Context context;
         public static readonly string ExtraAppWidgetIds = "appWidgetIds";

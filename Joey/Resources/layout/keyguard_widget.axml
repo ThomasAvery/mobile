@@ -15,7 +15,7 @@
         android:id="@+id/WidgetRunningEntry"
         android:orientation="horizontal"
         android:layout_width="wrap_content"
-        android:layout_marginBottom="5dp"
+        android:layout_marginBottom="7dp"
         android:visibility="invisible"
         android:layout_height="wrap_content"
         android:layout_gravity="center">
@@ -23,7 +23,7 @@
             android:id="@+id/WidgetColorView"
             android:layout_width="14dp"
             android:layout_height="14dp"
-            android:paddingTop="4dp"
+            android:paddingTop="5dp"
             android:paddingRight="6dp"
             android:src="@drawable/widget_color_shape" />
         <TextView
@@ -47,8 +47,8 @@
         android:id="@+id/WidgetRecentEntriesListView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:dividerHeight="4dp"
+        android:layout_marginTop="50dp"
+        android:dividerHeight="6dp"
         android:divider="@android:color/transparent"
         android:minHeight="40dp" />
 </LinearLayout>

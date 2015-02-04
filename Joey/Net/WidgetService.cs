@@ -17,6 +17,7 @@ using Android.Content.Res;
 
 namespace Toggl.Joey.Net
 {
+
     [Service]
     public class WidgetService : Service
     {
@@ -34,8 +35,8 @@ namespace Toggl.Joey.Net
         {
             base.OnStart (intent, startId);
             context = this;
-            if (intent.Extras.ContainsKey (HomescreenWidgetProvider.ExtraAppWidgetIds)) {
-                appWidgetIds = intent.GetIntArrayExtra (HomescreenWidgetProvider.ExtraAppWidgetIds);
+            if (intent.Extras.ContainsKey (WidgetProvider.ExtraAppWidgetIds)) {
+                appWidgetIds = intent.GetIntArrayExtra (WidgetProvider.ExtraAppWidgetIds);
             }
             if (intent.Action != null) {
                 if (intent.Action == CommandActionButton) {
@@ -104,7 +105,7 @@ namespace Toggl.Joey.Net
         private void RefreshViews ()
         {
             EnsureAdapter();
-            RemoteViews views = new RemoteViews (context.PackageName, Resource.Layout.homescreen_widget);
+            RemoteViews views = new RemoteViews (context.PackageName, Resource.Layout.keyguard_widget);
 
             if (CurrentState == TimeEntryState.Running) {
                 views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Resources.GetColor (Resource.Color.bright_red));
@@ -269,6 +270,15 @@ namespace Toggl.Joey.Net
             var entries = await query.QueryAsync ().ConfigureAwait (false);
             dataObject = entries;
         }
+
+//        private async void FetchProjectColor(Guid projectId)
+//        {
+//            var store = ServiceContainer.Resolve<IDataStore> ();
+//            var project = await store.Table<ProjectData> ()
+//                          .QueryAsync (r => r.Id == projectId);
+//             project.Count > 0 ?  project [0].Color : 0;
+//        }
+
 
         private TimeSpan GetDuration (DateTime startTime, DateTime stopTime)
         {

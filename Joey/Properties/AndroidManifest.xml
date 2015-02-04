@@ -27,7 +27,7 @@
 		</receiver>
 
         <receiver
-            android:name="toggl.joey.net.HomescreenWidgetProvider"
+            android:name="toggl.joey.net.WidgetProvider"
             android:icon="@drawable/Icon"
             android:label="Toggl widget" >
             <intent-filter>

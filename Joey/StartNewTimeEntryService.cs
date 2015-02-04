@@ -45,10 +45,16 @@ namespace Toggl.Joey
 
         private void LaunchTogglApp()
         {
-            var startAppIntent = new Intent ("android.intent.action.MAIN");
-            startAppIntent.AddCategory ("android.intent.category.LAUNCHER");
-            startAppIntent.AddFlags (ActivityFlags.NewTask);
-            startAppIntent.SetComponent (new ComponentName (ApplicationContext.PackageName, "toggl.joey.ui.activities.MainDrawerActivity"));
+            var startAppIntent = new Intent (Intent.ActionMain)
+            .AddCategory (Intent.CategoryLauncher)
+            .AddFlags (ActivityFlags.NewTask)
+            .SetComponent (
+                new ComponentName (
+                    ApplicationContext.PackageName,
+                    "toggl.joey.ui.activities.MainDrawerActivity"
+                )
+            );
+
             ApplicationContext.StartActivity (startAppIntent);
         }
 

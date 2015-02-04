@@ -121,12 +121,13 @@ namespace Toggl.Joey.Net
 
             Intent adapterServiceIntent = new Intent (context, typeof (WidgetListViewService));
             adapterServiceIntent.PutExtra (AppWidgetManager.ExtraAppwidgetId, appWidgetIds[0]);
-            adapterServiceIntent.SetData (Android.Net.Uri.Parse (adapterServiceIntent.ToUri (Intent.UriIntentScheme)));
+            adapterServiceIntent.SetData (Android.Net.Uri.Parse (adapterServiceIntent.ToUri (IntentUriType.Scheme)));
+
             views.SetRemoteAdapter (appWidgetIds[0], Resource.Id.WidgetRecentEntriesListView, adapterServiceIntent);
 
             Intent listItemIntent = new Intent (context, typeof (StartNewTimeEntryService.Receiver));
             listItemIntent.SetAction ("startEntry");
-            listItemIntent.SetData (Android.Net.Uri.Parse (listItemIntent.ToUri (Intent.UriIntentScheme)));
+            listItemIntent.SetData (Android.Net.Uri.Parse (listItemIntent.ToUri (IntentUriType.Scheme)));
             var pendingIntent = PendingIntent.GetBroadcast (context, 0, listItemIntent, PendingIntentFlags.UpdateCurrent);
             views.SetPendingIntentTemplate (Resource.Id.WidgetRecentEntriesListView, pendingIntent);
 

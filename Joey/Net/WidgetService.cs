@@ -203,7 +203,8 @@ namespace Toggl.Joey.Net
 
     public class WidgetListService : Java.Lang.Object, RemoteViewsService.IRemoteViewsFactory
     {
-        private List<TimeEntryData> dataObject = new List<TimeEntryData> ();
+        private List<ListEntryData> dataObject = new List<ListEntryData> ();
+
         private Context context = null;
         private int appWidgetId;
 
@@ -211,8 +212,9 @@ namespace Toggl.Joey.Net
         {
             context = ctx;
             appWidgetId = intent.GetIntExtra (AppWidgetManager.ExtraAppwidgetIds, AppWidgetManager.InvalidAppwidgetId);
-            FetchRecentEntries (3);
+            FetchData (3);
         }
+
 
         public long GetItemId (int position)
         {
@@ -222,23 +224,28 @@ namespace Toggl.Joey.Net
         public RemoteViews GetViewAt (int position)
         {
             var remoteView = new RemoteViews (context.PackageName, Resource.Layout.widget_list_item);
-            var timeEntry = dataObject [position]; // TODO: Should check if exists.
-            string description = String.IsNullOrEmpty (timeEntry.Description) ? "(no description)": timeEntry.Description;
+            var rowData = dataObject [position]; // TODO: Should check if exists.
+            string description = String.IsNullOrEmpty (rowData.Description) ? "(no description)": rowData.Description;
+            string project = String.IsNullOrEmpty (rowData.Project) ? "(no project)": rowData.Project;
 
-            var duration = GetDuration (timeEntry.StartTime, timeEntry.StopTime ?? DateTime.Now);
-            if (timeEntry.State == TimeEntryState.Running) {
-                remoteView.SetImageViewResource (Resource.Id.WidgetColorView, Resource.Drawable.IcWidgetStop);
+            if (rowData.State == TimeEntryState.Running) {
+                remoteView.SetImageViewResource (Resource.Id.WidgetContinueImageButton, Resource.Drawable.IcWidgetStop);
             }
 
             var fillIntent = new Intent();
             var TEBundle = new Bundle();
-            TEBundle.PutString ("guid", timeEntry.Id.ToString());
+            TEBundle.PutString ("guid", rowData.Id.ToString());
             fillIntent.PutExtra ("startRecentEntry", TEBundle);
             remoteView.SetOnClickFillInIntent (Resource.Id.WidgetContinueImageButton, fillIntent);
-
+            if (rowData.HasProject) {
+                remoteView.SetViewVisibility (Resource.Id.WidgetColorView, Android.Views.ViewStates.Visible);
+                remoteView.SetInt (Resource.Id.WidgetColorView, "setColorFilter", Color.ParseColor (ProjectModel.HexColors [rowData.ProjectColor % ProjectModel.HexColors.Length]));
+            } else {
+                remoteView.SetViewVisibility (Resource.Id.WidgetColorView, Android.Views.ViewStates.Gone);
+            }
             remoteView.SetTextViewText (Resource.Id.DescriptionTextView, description);
-            remoteView.SetTextViewText (Resource.Id.ProjectTextView, "(no project)");
-            remoteView.SetTextViewText (Resource.Id.DurationTextView, duration.ToString (@"hh\:mm\:ss"));
+            remoteView.SetTextViewText (Resource.Id.ProjectTextView, project);
+            remoteView.SetTextViewText (Resource.Id.DurationTextView, rowData.Duration.ToString (@"hh\:mm\:ss"));
             return remoteView;
         }
 
@@ -254,11 +261,11 @@ namespace Toggl.Joey.Net
         {
         }
 
-        private async void FetchRecentEntries (int maxCount = 3)
+        private async void FetchData (int maxCount = 3)
         {
+            dataObject = new List<ListEntryData> ();
             var store = ServiceContainer.Resolve<IDataStore> ();
             var user = ServiceContainer.Resolve<AuthManager> ().User;
-
             var queryStartDate = Time.UtcNow - TimeSpan.FromDays (9);
             var query = store.Table<TimeEntryData> ()
                         .OrderBy (r => r.StartTime, false)
@@ -268,16 +275,40 @@ namespace Toggl.Joey.Net
                                 && r.State != TimeEntryState.New
                                 && r.StartTime >= queryStartDate);
             var entries = await query.QueryAsync ().ConfigureAwait (false);
-            dataObject = entries;
+
+            foreach (var e in entries) {
+                ProjectData project = await FetchProjectData (e.ProjectId ?? Guid.Empty);
+
+                var en = new ListEntryData();
+                en.Id = e.Id;
+                en.Description = e.Description;
+                en.State = e.State;
+                en.Duration =  GetDuration (e.StartTime, e.StopTime ?? DateTime.Now);
+
+                if (String.IsNullOrEmpty (project.Name)) {
+                    en.HasProject = false;
+                } else {
+                    en.HasProject = true;
+                    en.Project = project.Name;
+                    en.ProjectColor = project.Color;
+                }
+
+                dataObject.Add (en);
+            }
         }
 
-//        private async void FetchProjectColor(Guid projectId)
-//        {
-//            var store = ServiceContainer.Resolve<IDataStore> ();
-//            var project = await store.Table<ProjectData> ()
-//                          .QueryAsync (r => r.Id == projectId);
-//             project.Count > 0 ?  project [0].Color : 0;
-//        }
+        private async Task<ProjectData> FetchProjectData (Guid projectId)
+        {
+            var store = ServiceContainer.Resolve<IDataStore> ();
+            var project = await store.Table<ProjectData> ()
+                          .QueryAsync (r => r.Id == projectId);
+
+            if (projectId == Guid.Empty) {
+                return new ProjectData(); // needs a better empty fallback
+            }
+
+            return project[0];
+        }
 
 
         private TimeSpan GetDuration (DateTime startTime, DateTime stopTime)
@@ -320,5 +351,17 @@ namespace Toggl.Joey.Net
                 return 1;
             }
         }
+    }
+
+    public class ListEntryData
+    {
+
+        public Guid Id;
+        public string Description;
+        public bool HasProject;
+        public string Project;
+        public int ProjectColor;
+        public TimeSpan Duration;
+        public TimeEntryState State;
     }
 }

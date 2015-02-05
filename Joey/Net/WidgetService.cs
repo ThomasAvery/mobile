@@ -64,7 +64,7 @@ namespace Toggl.Joey.Net
 
         private void EnsureAdapter()
         {
-            if (timeEntryManager == null) {
+            if (timeEntryManager == null && IsLogged) {
                 timeEntryManager = ServiceContainer.Resolve<ActiveTimeEntryManager> ();
             }
 
@@ -82,9 +82,29 @@ namespace Toggl.Joey.Net
             return PendingIntent.GetBroadcast (context, 0, actionButtonIntent, PendingIntentFlags.UpdateCurrent);
         }
 
+        private PendingIntent LogInButtonIntent()
+        {
+            var startAppIntent = new Intent (Intent.ActionMain)
+            .AddCategory (Intent.CategoryLauncher)
+            .AddFlags (ActivityFlags.NewTask)
+            .SetComponent (
+                new ComponentName (
+                    ApplicationContext.PackageName,
+                    "toggl.joey.ui.activities.LoginActivity"
+                )
+            );
+
+            return PendingIntent.GetActivity (context, 0, startAppIntent, PendingIntentFlags.UpdateCurrent);
+        }
+
         private async void Pulse ()
         {
-            RefreshViews ();
+            if (IsLogged) {
+                RefreshViews ();
+            } else {
+                LogInNotice ();
+            }
+
             manager.UpdateAppWidget (appWidgetIds, remoteViews);
             manager.NotifyAppWidgetViewDataChanged (appWidgetIds, remoteViews.LayoutId);
 
@@ -137,6 +157,14 @@ namespace Toggl.Joey.Net
             remoteViews = views;
         }
 
+        private void LogInNotice()
+        {
+            EnsureAdapter();
+            RemoteViews views = new RemoteViews (context.PackageName, Resource.Layout.widget_login);
+            views.SetOnClickPendingIntent (Resource.Id.WidgetLoginButton, LogInButtonIntent());
+            remoteViews = views;
+        }
+
         private async void FetchProjectColor()
         {
             var store = ServiceContainer.Resolve<IDataStore> ();
@@ -152,6 +180,15 @@ namespace Toggl.Joey.Net
                     return ActiveTimeEntryData.Description;
                 }
                 return Resources.GetText (Resource.String.RunningWidgetNoDescription);
+            }
+        }
+
+        private bool IsLogged
+        {
+            get {
+
+                var authManager = ServiceContainer.Resolve<AuthManager> ();
+                return authManager.IsAuthenticated;
             }
         }
 

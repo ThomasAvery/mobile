@@ -18,7 +18,7 @@
         android:layout_width="90dp"
         android:layout_height="34dp"
         android:textSize="12dp"
-        android:id="@+id/WidgetActionButton"
+        android:id="@+id/WidgetLoginButton"
         android:background="@color/bright_green"
         android:textColor="@android:color/white"
         android:layout_gravity="center" />

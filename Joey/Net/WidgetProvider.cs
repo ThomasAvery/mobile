@@ -14,12 +14,10 @@ namespace Toggl.Joey.Net
 
     public class WidgetProvider : AppWidgetProvider
     {
-        private Context context;
         public static readonly string ExtraAppWidgetIds = "appWidgetIds";
 
         public override void OnUpdate (Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
         {
-            this.context = context;
             var serviceIntent = new Intent (context, typeof (WidgetService));
             serviceIntent.SetAction (WidgetService.CommandInitial);
             var serviceBundle = new Bundle ();

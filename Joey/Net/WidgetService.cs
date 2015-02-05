@@ -250,7 +250,7 @@ namespace Toggl.Joey.Net
         {
             context = ctx;
             appWidgetId = intent.GetIntExtra (AppWidgetManager.ExtraAppwidgetIds, AppWidgetManager.InvalidAppwidgetId);
-            FetchData (3);
+            FetchData ();
         }
 
 
@@ -293,6 +293,7 @@ namespace Toggl.Joey.Net
 
         public void OnDataSetChanged ()
         {
+            FetchData ();
         }
 
         public void OnDestroy ()
@@ -301,7 +302,6 @@ namespace Toggl.Joey.Net
 
         private async void FetchData (int maxCount = 3)
         {
-            dataObject = new List<ListEntryData> ();
             var store = ServiceContainer.Resolve<IDataStore> ();
             var user = ServiceContainer.Resolve<AuthManager> ().User;
             var queryStartDate = Time.UtcNow - TimeSpan.FromDays (9);
@@ -314,25 +314,27 @@ namespace Toggl.Joey.Net
                                 && r.StartTime >= queryStartDate);
             var entries = await query.QueryAsync ().ConfigureAwait (false);
 
+            var bufferList = new List<ListEntryData> ();
             foreach (var e in entries) {
                 ProjectData project = await FetchProjectData (e.ProjectId ?? Guid.Empty);
 
-                var en = new ListEntryData();
-                en.Id = e.Id;
-                en.Description = e.Description;
-                en.State = e.State;
-                en.Duration =  GetDuration (e.StartTime, e.StopTime ?? DateTime.Now);
+                var entryData = new ListEntryData();
+                entryData.Id = e.Id;
+                entryData.Description = e.Description;
+                entryData.State = e.State;
+                entryData.Duration =  GetDuration (e.StartTime, e.StopTime ?? DateTime.Now);
 
                 if (String.IsNullOrEmpty (project.Name)) {
-                    en.HasProject = false;
+                    entryData.HasProject = false;
                 } else {
-                    en.HasProject = true;
-                    en.Project = project.Name;
-                    en.ProjectColor = project.Color;
+                    entryData.HasProject = true;
+                    entryData.Project = project.Name;
+                    entryData.ProjectColor = project.Color;
                 }
 
-                dataObject.Add (en);
+                bufferList.Add (entryData);
             }
+            dataObject = bufferList;
         }
 
         private async Task<ProjectData> FetchProjectData (Guid projectId)

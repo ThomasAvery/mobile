@@ -141,8 +141,6 @@
     <Compile Include="UI\Views\SnappyLayout.cs" />
     <Compile Include="UI\Utils\Pool.cs" />
     <Compile Include="Net\WidgetService.cs" />
-    <Compile Include="UI\Activities\WidgetActivity.cs" />
-    <Compile Include="UI\Components\WidgetComponent.cs" />
     <Compile Include="StartNewTimeEntryService.cs" />
     <Compile Include="Net\WidgetProvider.cs" />
   </ItemGroup>

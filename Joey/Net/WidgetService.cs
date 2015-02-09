@@ -6,6 +6,7 @@ using Android.Appwidget;
 using Android.Content;
 using Android.Graphics;
 using Android.OS;
+using Android.Views;
 using Android.Widget;
 using Toggl.Phoebe;
 using Toggl.Phoebe.Data;
@@ -13,7 +14,6 @@ using Toggl.Phoebe.Data.DataObjects;
 using Toggl.Phoebe.Data.Models;
 using Toggl.Phoebe.Net;
 using XPlatUtils;
-using Android.Content.Res;
 
 namespace Toggl.Joey.Net
 {
@@ -30,6 +30,7 @@ namespace Toggl.Joey.Net
         public const string WidgetCommand = "command";
         public const string CommandInitial = "initial";
         public const string CommandActionButton = "actionButton";
+
 
         public override void OnStart (Intent intent, int startId)
         {
@@ -84,7 +85,7 @@ namespace Toggl.Joey.Net
 
         private PendingIntent LogInButtonIntent()
         {
-            var startAppIntent = new Intent (Intent.ActionMain)
+            var loginIntent = new Intent (Intent.ActionMain)
             .AddCategory (Intent.CategoryLauncher)
             .AddFlags (ActivityFlags.NewTask)
             .SetComponent (
@@ -94,7 +95,7 @@ namespace Toggl.Joey.Net
                 )
             );
 
-            return PendingIntent.GetActivity (context, 0, startAppIntent, PendingIntentFlags.UpdateCurrent);
+            return PendingIntent.GetActivity (context, 0, loginIntent, PendingIntentFlags.UpdateCurrent);
         }
 
         private async void Pulse ()
@@ -104,7 +105,6 @@ namespace Toggl.Joey.Net
             } else {
                 LogInNotice ();
             }
-
             manager.UpdateAppWidget (appWidgetIds, remoteViews);
             manager.NotifyAppWidgetViewDataChanged (appWidgetIds, remoteViews.LayoutId);
 
@@ -125,7 +125,7 @@ namespace Toggl.Joey.Net
         private void RefreshViews ()
         {
             EnsureAdapter();
-            RemoteViews views = new RemoteViews (context.PackageName, Resource.Layout.keyguard_widget);
+            var views = new RemoteViews (context.PackageName, Resource.Layout.keyguard_widget);
 
             if (CurrentState == TimeEntryState.Running) {
                 views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Resources.GetColor (Resource.Color.bright_red));
@@ -139,13 +139,13 @@ namespace Toggl.Joey.Net
                 views.SetViewVisibility (Resource.Id.WidgetRunningEntry, Android.Views.ViewStates.Invisible);
             }
 
-            Intent adapterServiceIntent = new Intent (context, typeof (WidgetListViewService));
+            var adapterServiceIntent = new Intent (context, typeof (WidgetListViewService));
             adapterServiceIntent.PutExtra (AppWidgetManager.ExtraAppwidgetId, appWidgetIds[0]);
             adapterServiceIntent.SetData (Android.Net.Uri.Parse (adapterServiceIntent.ToUri (IntentUriType.Scheme)));
 
             views.SetRemoteAdapter (appWidgetIds[0], Resource.Id.WidgetRecentEntriesListView, adapterServiceIntent);
 
-            Intent listItemIntent = new Intent (context, typeof (StartNewTimeEntryService.Receiver));
+            var listItemIntent = new Intent (context, typeof (StartNewTimeEntryService.Receiver));
             listItemIntent.SetAction ("startEntry");
             listItemIntent.SetData (Android.Net.Uri.Parse (listItemIntent.ToUri (IntentUriType.Scheme)));
             var pendingIntent = PendingIntent.GetBroadcast (context, 0, listItemIntent, PendingIntentFlags.UpdateCurrent);
@@ -160,7 +160,7 @@ namespace Toggl.Joey.Net
         private void LogInNotice()
         {
             EnsureAdapter();
-            RemoteViews views = new RemoteViews (context.PackageName, Resource.Layout.widget_login);
+            var views = new RemoteViews (context.PackageName, Resource.Layout.widget_login);
             views.SetOnClickPendingIntent (Resource.Id.WidgetLoginButton, LogInButtonIntent());
             remoteViews = views;
         }
@@ -241,18 +241,16 @@ namespace Toggl.Joey.Net
 
     public class WidgetListService : Java.Lang.Object, RemoteViewsService.IRemoteViewsFactory
     {
+        public const string FillIntentExtraKey = "listItemAction";
         private List<ListEntryData> dataObject = new List<ListEntryData> ();
-
         private Context context = null;
-        private int appWidgetId;
+
 
         public WidgetListService (Context ctx, Intent intent)
         {
             context = ctx;
-            appWidgetId = intent.GetIntExtra (AppWidgetManager.ExtraAppwidgetIds, AppWidgetManager.InvalidAppwidgetId);
             FetchData ();
         }
-
 
         public long GetItemId (int position)
         {
@@ -262,27 +260,19 @@ namespace Toggl.Joey.Net
         public RemoteViews GetViewAt (int position)
         {
             var remoteView = new RemoteViews (context.PackageName, Resource.Layout.widget_list_item);
-            var rowData = dataObject [position]; // TODO: Should check if exists.
-            string description = String.IsNullOrEmpty (rowData.Description) ? "(no description)": rowData.Description;
-            string project = String.IsNullOrEmpty (rowData.Project) ? "(no project)": rowData.Project;
+            var rowData = dataObject [position];
 
             if (rowData.State == TimeEntryState.Running) {
                 remoteView.SetImageViewResource (Resource.Id.WidgetContinueImageButton, Resource.Drawable.IcWidgetStop);
+            } else {
+                remoteView.SetImageViewResource (Resource.Id.WidgetContinueImageButton, Resource.Drawable.IcWidgetPlay);
             }
 
-            var fillIntent = new Intent();
-            var TEBundle = new Bundle();
-            TEBundle.PutString ("guid", rowData.Id.ToString());
-            fillIntent.PutExtra ("startRecentEntry", TEBundle);
-            remoteView.SetOnClickFillInIntent (Resource.Id.WidgetContinueImageButton, fillIntent);
-            if (rowData.HasProject) {
-                remoteView.SetViewVisibility (Resource.Id.WidgetColorView, Android.Views.ViewStates.Visible);
-                remoteView.SetInt (Resource.Id.WidgetColorView, "setColorFilter", Color.ParseColor (ProjectModel.HexColors [rowData.ProjectColor % ProjectModel.HexColors.Length]));
-            } else {
-                remoteView.SetViewVisibility (Resource.Id.WidgetColorView, Android.Views.ViewStates.Gone);
-            }
-            remoteView.SetTextViewText (Resource.Id.DescriptionTextView, description);
-            remoteView.SetTextViewText (Resource.Id.ProjectTextView, project);
+            remoteView.SetInt (Resource.Id.WidgetColorView, "setColorFilter", Color.ParseColor (ProjectModel.HexColors [rowData.ProjectColor % ProjectModel.HexColors.Length]));
+            remoteView.SetOnClickFillInIntent (Resource.Id.WidgetContinueImageButton, new Intent().PutExtra (FillIntentExtraKey, rowData.FillIntentBundle));
+            remoteView.SetViewVisibility (Resource.Id.WidgetColorView, rowData.HasProject ? ViewStates.Visible: ViewStates.Gone);
+            remoteView.SetTextViewText (Resource.Id.DescriptionTextView, rowData.Description);
+            remoteView.SetTextViewText (Resource.Id.ProjectTextView, rowData.Project);
             remoteView.SetTextViewText (Resource.Id.DurationTextView, rowData.Duration.ToString (@"hh\:mm\:ss"));
             return remoteView;
         }
@@ -315,22 +305,18 @@ namespace Toggl.Joey.Net
             var entries = await query.QueryAsync ().ConfigureAwait (false);
 
             var bufferList = new List<ListEntryData> ();
-            foreach (var e in entries) {
-                ProjectData project = await FetchProjectData (e.ProjectId ?? Guid.Empty);
+            foreach (var entry in entries) {
+                var project = await FetchProjectData (entry.ProjectId ?? Guid.Empty);
 
                 var entryData = new ListEntryData();
-                entryData.Id = e.Id;
-                entryData.Description = e.Description;
-                entryData.State = e.State;
-                entryData.Duration =  GetDuration (e.StartTime, e.StopTime ?? DateTime.Now);
-
-                if (String.IsNullOrEmpty (project.Name)) {
-                    entryData.HasProject = false;
-                } else {
-                    entryData.HasProject = true;
-                    entryData.Project = project.Name;
-                    entryData.ProjectColor = project.Color;
-                }
+                entryData.Id = entry.Id;
+                entryData.Description = String.IsNullOrEmpty (entry.Description) ? "(no description)": entry.Description;
+                entryData.Duration =  GetDuration (entry.StartTime, entry.StopTime ?? DateTime.Now);
+                entryData.Project = String.IsNullOrEmpty (project.Name) ? "(no project)": project.Name;
+                entryData.HasProject = String.IsNullOrEmpty (project.Name) ? false : true;
+                entryData.ProjectColor = project.Color;
+                entryData.State = entry.State;
+                entryData.FillIntentBundle.PutString ("EntryId", entry.Id.ToString());
 
                 bufferList.Add (entryData);
             }
@@ -395,7 +381,6 @@ namespace Toggl.Joey.Net
 
     public class ListEntryData
     {
-
         public Guid Id;
         public string Description;
         public bool HasProject;
@@ -403,5 +388,6 @@ namespace Toggl.Joey.Net
         public int ProjectColor;
         public TimeSpan Duration;
         public TimeEntryState State;
+        public Bundle FillIntentBundle = new Bundle(); // For startEntryService.
     }
 }

@@ -42,11 +42,9 @@ namespace Toggl.Joey
                     app.InitializeComponents ();
                 }
                 if (hasKey) {
-                    var startTask = Continue (userActionGuid);
-                    await startTask;
+                    await StartOrStop (userActionGuid);
                 } else {
-                    var startTask = StartNewRunning ();
-                    await startTask;
+                    await StartNewRunning ();
                     LaunchTogglApp();
                 }
             } finally {
@@ -85,7 +83,7 @@ namespace Toggl.Joey
             ServiceContainer.Resolve<ITracker> ().SendTimerStartEvent (TimerStartSource.WidgetNew);
         }
 
-        private static async Task Continue (Guid entryId)
+        private static async Task StartOrStop (Guid entryId)
         {
             var runningEntryId = await GetRunningGuid();
 
@@ -94,6 +92,7 @@ namespace Toggl.Joey
             if (entryId == runningEntryId) { // if same TE, then action was Stop.
                 return;
             }
+
             var userId = ServiceContainer.Resolve<AuthManager> ().GetUserId ();
             var dataStore = ServiceContainer.Resolve<IDataStore> ();
 
@@ -111,6 +110,8 @@ namespace Toggl.Joey
             newStart.DurationOnly = entry[0].DurationOnly;
 
             await new TimeEntryModel (newStart).StartAsync();
+            ServiceContainer.Resolve<ITracker> ().SendTimerStartEvent (TimerStartSource.WidgetStart);
+
         }
 
         private static async Task<Guid> GetRunningGuid()

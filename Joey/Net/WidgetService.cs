@@ -93,7 +93,6 @@ namespace Toggl.Joey.Net
                 views.SetViewVisibility (Resource.Id.WidgetRunningEntry, ViewStates.Visible);
                 views.SetTextViewText (Resource.Id.WidgetRunningDescriptionTextView, activeEntry.Description);
                 views.SetTextViewText (Resource.Id.WidgetDuration, activeEntry.Duration.ToString (@"hh\:mm\:ss"));
-                Console.WriteLine ("duration: {0}", activeEntry.Duration.ToString (@"hh\:mm\:ss"));
             } else {
                 views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Resources.GetColor (Resource.Color.bright_green));
                 views.SetInt (Resource.Id.WidgetActionButton, "setText", Resource.String.TimerStartButtonText);
@@ -108,7 +107,6 @@ namespace Toggl.Joey.Net
             views.SetRemoteAdapter (appWidgetIds[0], Resource.Id.WidgetRecentEntriesListView, adapterServiceIntent);
 
             var listItemIntent = new Intent (context, typeof (StartNewTimeEntryService.Receiver));
-            listItemIntent.SetAction ("startEntry");
             listItemIntent.SetData (Android.Net.Uri.Parse (listItemIntent.ToUri (IntentUriType.Scheme)));
             var pendingIntent = PendingIntent.GetBroadcast (context, 0, listItemIntent, PendingIntentFlags.UpdateCurrent);
             views.SetPendingIntentTemplate (Resource.Id.WidgetRecentEntriesListView, pendingIntent);
@@ -172,6 +170,7 @@ namespace Toggl.Joey.Net
     public class WidgetListService : Java.Lang.Object, RemoteViewsService.IRemoteViewsFactory
     {
         public const string FillIntentExtraKey = "listItemAction";
+
         private List<ListEntryData> dataObject = new List<ListEntryData> ();
         private Context context = null;
         private WidgetDataView widgetDataView;

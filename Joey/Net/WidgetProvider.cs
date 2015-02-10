@@ -1,10 +1,7 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Appwidget;
 using Android.Content;
 using Android.OS;
-using Android.Widget;
-using Toggl.Phoebe.Data;
 
 namespace Toggl.Joey.Net
 {
@@ -19,7 +16,6 @@ namespace Toggl.Joey.Net
         public override void OnUpdate (Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds)
         {
             var serviceIntent = new Intent (context, typeof (WidgetService));
-            serviceIntent.SetAction (WidgetService.CommandInitial);
             var serviceBundle = new Bundle ();
             serviceBundle.PutIntArray (ExtraAppWidgetIds, appWidgetIds);
             serviceIntent.PutExtras (serviceBundle);

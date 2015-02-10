@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Android.OS;
 using Toggl.Phoebe.Data.DataObjects;
 using Toggl.Phoebe.Net;
 using XPlatUtils;
@@ -70,7 +69,6 @@ namespace Toggl.Phoebe.Data.Views
             entryData.HasProject = !String.IsNullOrEmpty (project.Name);
             entryData.ProjectColor = project.Color;
             entryData.State = entry.State;
-            entryData.FillIntentBundle.PutString ("EntryId", entry.Id.ToString());
 
             return entryData;
         }
@@ -136,8 +134,6 @@ namespace Toggl.Phoebe.Data.Views
         public TimeSpan Duration;
 
         public TimeEntryState State;
-
-        public Bundle FillIntentBundle = new Bundle(); // For startEntryService.
     }
 }
 

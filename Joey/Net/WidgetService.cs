@@ -208,7 +208,7 @@ namespace Toggl.Joey.Net
             }
 
             remoteView.SetInt (Resource.Id.WidgetColorView, "setColorFilter", Color.ParseColor (ProjectModel.HexColors [rowData.ProjectColor % ProjectModel.HexColors.Length]));
-            remoteView.SetOnClickFillInIntent (Resource.Id.WidgetContinueImageButton, new Intent().PutExtra (FillIntentExtraKey, rowData.FillIntentBundle));
+            remoteView.SetOnClickFillInIntent (Resource.Id.WidgetContinueImageButton, ConstructFillIntent (rowData));
             remoteView.SetViewVisibility (Resource.Id.WidgetColorView, rowData.HasProject ? ViewStates.Visible: ViewStates.Gone);
             remoteView.SetTextViewText (
                 Resource.Id.DescriptionTextView,
@@ -218,6 +218,13 @@ namespace Toggl.Joey.Net
                 String.IsNullOrWhiteSpace (rowData.Project) ?  "(no project)" : rowData.Project);
             remoteView.SetTextViewText (Resource.Id.DurationTextView, rowData.Duration.ToString (@"hh\:mm\:ss"));
             return remoteView;
+        }
+
+        private Intent ConstructFillIntent (ListEntryData entryData)
+        {
+            var intentBundle = new Bundle();
+            intentBundle.PutString ("EntryId", entryData.Id.ToString() );
+            return new Intent().PutExtra (FillIntentExtraKey, intentBundle);
         }
 
         public void OnDataSetChanged ()

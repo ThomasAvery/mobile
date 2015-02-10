@@ -10,7 +10,6 @@ namespace Toggl.Phoebe.Data.Views
 {
     public class WidgetDataView
     {
-
         private List<ListEntryData> dataObject;
         private ListEntryData activeTimeEntry;
         private readonly int maxCount = 3;
@@ -52,13 +51,8 @@ namespace Toggl.Phoebe.Data.Views
                                    .QueryAsync()
                                    .ConfigureAwait (false);
 
-                if (runningEntry.Count > 0) {
-                    activeTimeEntry = await ConvertToListEntryData (runningEntry[0]);
-                    hasRunning = true;
-                } else {
-                    activeTimeEntry = null;
-                    hasRunning = false;
-                }
+                hasRunning = runningEntry.Count > 0;
+                activeTimeEntry = hasRunning ? await ConvertToListEntryData (runningEntry[0]) : null;
 
             } finally {
                 IsLoading = false;
@@ -70,16 +64,17 @@ namespace Toggl.Phoebe.Data.Views
             var project = await FetchProjectData (entry.ProjectId ?? Guid.Empty);
             var entryData = new ListEntryData();
             entryData.Id = entry.Id;
-            entryData.Description = String.IsNullOrEmpty (entry.Description) ? "(no description)": entry.Description;
+            entryData.Description = entry.Description;
             entryData.Duration =  GetDuration (entry.StartTime, entry.StopTime ?? DateTime.Now);
-            entryData.Project = String.IsNullOrEmpty (project.Name) ? "(no project)": project.Name;
-            entryData.HasProject = String.IsNullOrEmpty (project.Name) ? false : true;
+            entryData.Project = project.Name;
+            entryData.HasProject = !String.IsNullOrEmpty (project.Name);
             entryData.ProjectColor = project.Color;
             entryData.State = entry.State;
             entryData.FillIntentBundle.PutString ("EntryId", entry.Id.ToString());
 
             return entryData;
         }
+
         public List<ListEntryData> Data
         {
             get {
@@ -101,7 +96,6 @@ namespace Toggl.Phoebe.Data.Views
             }
         }
 
-
         public bool IsLoading { get; private set; }
 
         private async Task<ProjectData> FetchProjectData (Guid projectId)
@@ -110,11 +104,7 @@ namespace Toggl.Phoebe.Data.Views
             var project = await store.Table<ProjectData> ()
                           .QueryAsync (r => r.Id == projectId);
 
-            if (projectId == Guid.Empty) {
-                return new ProjectData();
-            }
-
-            return project[0];
+            return projectId == Guid.Empty ? new ProjectData() : project[0];
         }
 
         private TimeSpan GetDuration (DateTime startTime, DateTime stopTime)

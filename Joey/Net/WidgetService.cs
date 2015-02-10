@@ -91,7 +91,9 @@ namespace Toggl.Joey.Net
                 views.SetInt (Resource.Id.WidgetActionButton, "setText", Resource.String.TimerStopButtonText);
                 views.SetInt (Resource.Id.WidgetColorView, "setColorFilter", activeEntry.ProjectColor);
                 views.SetViewVisibility (Resource.Id.WidgetRunningEntry, ViewStates.Visible);
-                views.SetTextViewText (Resource.Id.WidgetRunningDescriptionTextView, activeEntry.Description);
+                views.SetTextViewText (
+                    Resource.Id.WidgetRunningDescriptionTextView,
+                    String.IsNullOrWhiteSpace (activeEntry.Description) ? "(no description)" : activeEntry.Description);
                 views.SetTextViewText (Resource.Id.WidgetDuration, activeEntry.Duration.ToString (@"hh\:mm\:ss"));
             } else {
                 views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Resources.GetColor (Resource.Color.bright_green));
@@ -208,8 +210,12 @@ namespace Toggl.Joey.Net
             remoteView.SetInt (Resource.Id.WidgetColorView, "setColorFilter", Color.ParseColor (ProjectModel.HexColors [rowData.ProjectColor % ProjectModel.HexColors.Length]));
             remoteView.SetOnClickFillInIntent (Resource.Id.WidgetContinueImageButton, new Intent().PutExtra (FillIntentExtraKey, rowData.FillIntentBundle));
             remoteView.SetViewVisibility (Resource.Id.WidgetColorView, rowData.HasProject ? ViewStates.Visible: ViewStates.Gone);
-            remoteView.SetTextViewText (Resource.Id.DescriptionTextView, rowData.Description);
-            remoteView.SetTextViewText (Resource.Id.ProjectTextView, rowData.Project);
+            remoteView.SetTextViewText (
+                Resource.Id.DescriptionTextView,
+                String.IsNullOrWhiteSpace (rowData.Description) ?  "(no description)" : rowData.Description);
+            remoteView.SetTextViewText (
+                Resource.Id.ProjectTextView,
+                String.IsNullOrWhiteSpace (rowData.Project) ?  "(no project)" : rowData.Project);
             remoteView.SetTextViewText (Resource.Id.DurationTextView, rowData.Duration.ToString (@"hh\:mm\:ss"));
             return remoteView;
         }

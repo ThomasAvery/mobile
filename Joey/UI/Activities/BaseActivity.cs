@@ -89,7 +89,7 @@ namespace Toggl.Joey.UI.Activities
         {
             base.OnCreate (state);
             Window windowManager = Window;
-            windowManager.AddFlags (WindowManagerFlags.DismissKeyguard); // to launch app from lock screen widget
+            windowManager.AddFlags (WindowManagerFlags.ShowWhenLocked); // to launch app from lock screen widget
 
             if (!StartAuthActivity ()) {
                 OnCreateActivity (state);

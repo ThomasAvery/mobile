@@ -36,7 +36,7 @@ namespace Toggl.Joey.UI.Components
 
         protected TextView DurationTextView { get; private set; }
 
-        protected Button ActionButton { get; private set; }
+        protected TextView ActionButton { get; private set; }
 
         public View Root { get; private set; }
 
@@ -44,10 +44,10 @@ namespace Toggl.Joey.UI.Components
 
         private void FindViews ()
         {
-            ActionButton = Root.FindViewById<Button> (Resource.Id.ActionButton).SetFont (Font.Roboto);
+//            ActionButton = Root.FindViewById<TextView> (Resource.Id.DurationTextView).SetFont (Font.Roboto);
             DurationTextView = Root.FindViewById<TextView> (Resource.Id.DurationTextView).SetFont (Font.RobotoLight);
 
-            ActionButton.Click += OnActionButtonClicked;
+//            ActionButton.Click += OnActionButtonClicked;
             DurationTextView.Click += OnDurationTextClicked;
         }
 
@@ -181,23 +181,6 @@ namespace Toggl.Joey.UI.Components
                 return;
             }
 
-            var res = activity.Resources;
-            if (currentEntry.State == TimeEntryState.New && currentEntry.StopTime.HasValue) {
-                // Save button
-                ActionButton.Text = res.GetString (Resource.String.TimerSaveButtonText);
-                ActionButton.SetBackgroundColor (res.GetColor (Resource.Color.gray));
-            } else if (currentEntry.State == TimeEntryState.Running) {
-                // Stop button
-                ActionButton.Text = res.GetString (Resource.String.TimerStopButtonText);
-                ActionButton.SetBackgroundColor (res.GetColor (Resource.Color.bright_red));
-            } else {
-                // Start button
-                ActionButton.Text = res.GetString (Resource.String.TimerStartButtonText);
-                ActionButton.SetBackgroundColor (res.GetColor (Resource.Color.bright_green));
-            }
-
-            ActionButton.Visibility = HideAction ? ViewStates.Gone : ViewStates.Visible;
-
             if (currentEntry.State == TimeEntryState.Running && !HideDuration) {
                 var duration = currentEntry.GetDuration ();
                 DurationTextView.Text = TimeSpan.FromSeconds ((long)duration.TotalSeconds).ToString ();
@@ -206,8 +189,6 @@ namespace Toggl.Joey.UI.Components
                 // Schedule next rebind:
                 handler.RemoveCallbacks (Rebind);
                 handler.PostDelayed (Rebind, 1000 - duration.Milliseconds);
-            } else {
-                DurationTextView.Visibility = ViewStates.Gone;
             }
         }
 

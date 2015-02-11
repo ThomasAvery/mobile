@@ -91,9 +91,15 @@ namespace Toggl.Joey.UI.Activities
             syncStatusText = DrawerSyncView.FindViewById<TextView> (Resource.Id.SyncStatusText);
 
             ActionBar.SetCustomView (Timer.Root, lp);
-            ActionBar.SetDisplayShowCustomEnabled (true);
+            ActionBar.SetDisplayShowCustomEnabled (false);
+            ActionBar.SetTitle (Resource.String.MainDrawerTimer);
             ActionBar.SetDisplayHomeAsUpEnabled (true);
             ActionBar.SetHomeButtonEnabled (true);
+            ActionBar.SetIcon (null);
+            ActionBar.SetHomeAsUpIndicator (null);
+            ActionBar.SetLogo (null);
+            ActionBar.SetDisplayUseLogoEnabled (false);
+            ActionBar.SetBackgroundDrawable (Resources.GetDrawable (Resource.Drawable.BgArrows));
 
             if (bundle == null) {
                 OpenPage (DrawerListAdapter.TimerPageId);

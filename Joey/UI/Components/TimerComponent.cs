@@ -33,10 +33,13 @@ namespace Toggl.Joey.UI.Components
         private bool isProcessingAction;
         private bool hideDuration;
         private bool hideAction;
+        private TimerComponentState componentState;
 
         protected TextView DurationTextView { get; private set; }
 
-        protected TextView ActionButton { get; private set; }
+        protected TextView ProjectTextView { get; private set; }
+
+        protected TextView DescriptionTextView { get; private set; }
 
         public View Root { get; private set; }
 
@@ -44,10 +47,10 @@ namespace Toggl.Joey.UI.Components
 
         private void FindViews ()
         {
-//            ActionButton = Root.FindViewById<TextView> (Resource.Id.DurationTextView).SetFont (Font.Roboto);
             DurationTextView = Root.FindViewById<TextView> (Resource.Id.DurationTextView).SetFont (Font.RobotoLight);
+            ProjectTextView = Root.FindViewById<TextView> (Resource.Id.ProjectTextView).SetFont (Font.Roboto);
+            DescriptionTextView = Root.FindViewById<TextView> (Resource.Id.DescriptionTextView).SetFont (Font.RobotoLight);
 
-//            ActionButton.Click += OnActionButtonClicked;
             DurationTextView.Click += OnDurationTextClicked;
         }
 
@@ -192,6 +195,18 @@ namespace Toggl.Joey.UI.Components
             }
         }
 
+        public TimerComponentState State
+        {
+            get {
+                return componentState;
+            } set {
+                if (componentState != value) {
+                    componentState = value;
+                    Rebind ();
+                }
+            }
+        }
+
         public bool HideDuration
         {
             get { return hideDuration; }
@@ -287,5 +302,11 @@ namespace Toggl.Joey.UI.Components
                 return ServiceContainer.Resolve<SettingsStore> ().ChooseProjectForNew;
             }
         }
+    }
+
+    public enum TimerComponentState {
+        Collapsed,
+        Running,
+        NotRunning
     }
 }

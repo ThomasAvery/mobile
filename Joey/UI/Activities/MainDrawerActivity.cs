@@ -96,8 +96,6 @@ namespace Toggl.Joey.UI.Activities
             ActionBar.SetDisplayHomeAsUpEnabled (true);
             ActionBar.SetHomeButtonEnabled (true);
             ActionBar.SetIcon (null);
-            ActionBar.SetHomeAsUpIndicator (null);
-            ActionBar.SetLogo (null);
             ActionBar.SetDisplayUseLogoEnabled (false);
             ActionBar.SetBackgroundDrawable (Resources.GetDrawable (Resource.Drawable.BgArrows));
 

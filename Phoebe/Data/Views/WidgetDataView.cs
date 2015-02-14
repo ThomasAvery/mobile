@@ -14,7 +14,7 @@ namespace Toggl.Phoebe.Data.Views
         private readonly int maxCount = 3;
         private UserData userData;
         private DateTime queryStartDate;
-        private bool hasRunning;
+        private bool isRunning;
 
         public async void Load()
         {
@@ -50,8 +50,8 @@ namespace Toggl.Phoebe.Data.Views
                                    .QueryAsync()
                                    .ConfigureAwait (false);
 
-                hasRunning = runningEntry.Count > 0;
-                activeTimeEntry = hasRunning ? await ConvertToListEntryData (runningEntry[0]) : null;
+                isRunning = runningEntry.Count > 0;
+                activeTimeEntry = isRunning ? await ConvertToListEntryData (runningEntry[0]) : null;
 
             } finally {
                 IsLoading = false;
@@ -87,10 +87,10 @@ namespace Toggl.Phoebe.Data.Views
             }
         }
 
-        public bool HasRunning
+        public bool IsRunning
         {
             get {
-                return hasRunning;
+                return isRunning;
             }
         }
 

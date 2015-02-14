@@ -25,7 +25,7 @@ namespace Toggl.Joey.Net
         private AppWidgetManager manager;
         private WidgetDataView widgetDataView;
         private ListEntryData activeEntry;
-        private bool hasRunning;
+        private bool isRunning;
         private int[] appWidgetIds;
 
         public override void OnStart (Intent intent, int startId)
@@ -65,14 +65,15 @@ namespace Toggl.Joey.Net
 
         private async void Pulse ()
         {
+            EnsureAdapter();
+            widgetDataView.Load();
+            activeEntry = widgetDataView.Active;
+            isRunning = widgetDataView.IsRunning;
             if (IsLogged) {
                 RefreshViews ();
             } else {
                 LogInNotice ();
             }
-            widgetDataView.Load();
-            activeEntry = widgetDataView.Active;
-            hasRunning = widgetDataView.HasRunning;
 
             manager.UpdateAppWidget (appWidgetIds, remoteViews);
             manager.NotifyAppWidgetViewDataChanged (appWidgetIds, remoteViews.LayoutId);
@@ -83,10 +84,9 @@ namespace Toggl.Joey.Net
 
         private void RefreshViews ()
         {
-            EnsureAdapter();
             var views = new RemoteViews (context.PackageName, Resource.Layout.keyguard_widget);
 
-            if (hasRunning) {
+            if (isRunning) {
                 views.SetInt (Resource.Id.WidgetActionButton, "setBackgroundColor", Resources.GetColor (Resource.Color.bright_red));
                 views.SetInt (Resource.Id.WidgetActionButton, "setText", Resource.String.TimerStopButtonText);
                 views.SetInt (Resource.Id.WidgetColorView, "setColorFilter", activeEntry.ProjectColor);
@@ -129,7 +129,7 @@ namespace Toggl.Joey.Net
         private PendingIntent ActionButtonIntent()
         {
             var actionButtonIntent = StartBlankRunning ();
-            if (hasRunning) {
+            if (isRunning) {
                 actionButtonIntent = StopRunning ();
             }
             return PendingIntent.GetBroadcast (context, 0, actionButtonIntent, PendingIntentFlags.UpdateCurrent);
@@ -180,11 +180,15 @@ namespace Toggl.Joey.Net
         public WidgetListService (Context ctx, Intent intent)
         {
             context = ctx;
+            FetchData ();
+        }
+
+        private void FetchData()
+        {
             widgetDataView = new WidgetDataView();
             widgetDataView.Load();
             dataObject = widgetDataView.Data;
         }
-
         public long GetItemId (int position)
         {
             return position;
@@ -236,6 +240,10 @@ namespace Toggl.Joey.Net
         public int Count
         {
             get {
+
+                if (dataObject == null) {
+
+                }
                 return dataObject.Count;
             }
         }

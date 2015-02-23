@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Support.V4.Content;
-using Toggl.Joey.Net;
 using Toggl.Phoebe.Analytics;
 using Toggl.Phoebe.Data;
 using Toggl.Phoebe.Data.DataObjects;
@@ -31,26 +30,7 @@ namespace Toggl.Joey
 
         public override async void OnStart (Intent intent, int startId)
         {
-            try {
-                bool hasKey = intent.HasExtra (WidgetListService.FillIntentExtraKey);
-                if (hasKey) {
-                    userActionGuid = Guid.Parse (intent.GetBundleExtra (WidgetListService.FillIntentExtraKey).GetString ("EntryId"));
-                }
 
-                var app = Application as AndroidApp;
-                if (app != null) {
-                    app.InitializeComponents ();
-                }
-                if (hasKey) {
-                    await StartOrStop (userActionGuid);
-                } else {
-                    await StartNewRunning ();
-                    LaunchTogglApp();
-                }
-            } finally {
-                Receiver.CompleteWakefulIntent (intent);
-                StopSelf (startId);
-            }
         }
 
         private void LaunchTogglApp()
@@ -164,11 +144,6 @@ namespace Toggl.Joey
         {
             public override void OnReceive (Context context, Intent intent)
             {
-                var serviceIntent = new Intent (context, typeof (StartNewTimeEntryService));
-                if (intent.HasExtra (WidgetListService.FillIntentExtraKey)) {
-                    serviceIntent.PutExtra (WidgetListService.FillIntentExtraKey, intent.GetBundleExtra (WidgetListService.FillIntentExtraKey));
-                }
-                StartWakefulService (context, serviceIntent);
             }
         }
     }

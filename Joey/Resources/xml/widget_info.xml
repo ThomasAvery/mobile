@@ -5,6 +5,6 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:resizeMode="vertical"
-    android:widgetCategory="keyguard"
+    android:widgetCategory="home_screen|keyguard"
     android:updatePeriodMillis="180000"
     android:initialLayout="@layout/keyguard_widget" />

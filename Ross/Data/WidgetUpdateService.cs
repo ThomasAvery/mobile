@@ -32,7 +32,11 @@ namespace Toggl.Ross.Data
         {
             get {
                 if (nsUserDefaults == null) {
+<<<<<<< HEAD
                     nsUserDefaults = new NSUserDefaults ("group." + NSBundle.MainBundle.BundleIdentifier, NSUserDefaultsType.SuiteName);
+=======
+                    nsUserDefaults = new NSUserDefaults ("group.com.toggl.timer", NSUserDefaultsType.SuiteName);
+>>>>>>> New app widget structure.
                 }
                 return nsUserDefaults;
             }
@@ -48,8 +52,11 @@ namespace Toggl.Ross.Data
 
             var authManager = ServiceContainer.Resolve<AuthManager>();
             SetUserLogged (authManager.IsAuthenticated);
+<<<<<<< HEAD
             SetAppActivated (true);
             SetAppOnBackground (false);
+=======
+>>>>>>> New app widget structure.
             rootController = UIApplication.SharedApplication.KeyWindow.RootViewController;
         }
 
@@ -75,6 +82,7 @@ namespace Toggl.Ross.Data
             UpdateWidgetContent();
         }
 
+<<<<<<< HEAD
         public void SetAppActivated (bool isActivated)
         {
             UserDefaults.SetBool (isActivated, AppActiveEntryKey);
@@ -89,6 +97,10 @@ namespace Toggl.Ross.Data
 
         public void ShowNewTimeEntryScreen (TimeEntryModel currentTimeEntry)
         {
+=======
+        public void ShowNewTimeEntryScreen (TimeEntryModel currentTimeEntry)
+        {
+>>>>>>> New app widget structure.
             var topVCList = new List<UIViewController> (rootController.ChildViewControllers);
             if (topVCList.Count > 0) {
                 // Get current VC's navigation

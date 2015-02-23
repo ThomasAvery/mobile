@@ -172,8 +172,8 @@ namespace Toggl.Phoebe
                     });
 
                 }
-
-                widgetUpdateService.SetLastEntries (widgetEntries);
+                    
+                widgetUpdateService.LastEntries = widgetEntries;
 
             } catch (Exception exc) {
                 var log = ServiceContainer.Resolve<ILogger> ();
@@ -186,7 +186,7 @@ namespace Toggl.Phoebe
         private void OnAuthPropertyChanged (object sender, PropertyChangedEventArgs args)
         {
             if (args.PropertyName == AuthManager.PropertyIsAuthenticated) {
-                widgetUpdateService.SetUserLogged (authManager.IsAuthenticated);
+                widgetUpdateService.IsUserLogged = authManager.IsAuthenticated;
             }
         }
 
@@ -218,10 +218,10 @@ namespace Toggl.Phoebe
             rebindCounter++;
 
             if (currentTimeEntry == null) {
-                widgetUpdateService.SetRunningEntryDuration (DefaultDurationText);
+                widgetUpdateService.RunningEntryDuration = DefaultDurationText;
             } else {
                 var duration = currentTimeEntry.GetDuration ();
-                widgetUpdateService.SetRunningEntryDuration (duration.ToString (@"hh\:mm\:ss"));
+                widgetUpdateService.RunningEntryDuration = duration.ToString (@"hh\:mm\:ss");
 
                 var counter = rebindCounter;
                 var timer = new Timer (1000 - duration.Milliseconds);

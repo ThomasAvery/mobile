@@ -6,11 +6,11 @@ namespace Toggl.Phoebe
 {
     public interface IWidgetUpdateService
     {
-        void SetLastEntries (List<WidgetSyncManager.WidgetEntryData> lastEntries);
+        List<WidgetSyncManager.WidgetEntryData> LastEntries { get; set; }
 
-        void SetRunningEntryDuration (string duration);
+        string RunningEntryDuration { get; set; }
 
-        void SetUserLogged (bool isLogged);
+        bool IsUserLogged { get; set; }
 
         void SetAppActivated (bool isActivated);
 

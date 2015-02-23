@@ -25,21 +25,5 @@
 				<action android:name="com.android.vending.INSTALL_REFERRER" />
 			</intent-filter>
 		</receiver>
-
-        <receiver
-            android:name="toggl.joey.net.WidgetProvider"
-            android:icon="@drawable/Icon"
-            android:label="Toggl widget" >
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_info" />
-        </receiver>
-        <service
-            android:name="toggl.joey.net.WidgetListViewService"
-            android:permission="android.permission.BIND_REMOTEVIEWS"
-            android:exported="false" />
 	</application>
 </manifest>

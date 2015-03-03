@@ -1,18 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
-        <inset android:insetLeft="5dp" android:insetRight="5dp" android:drawable="@drawable/BgMainListButtonPressed" />
+        <inset android:insetLeft="0dp" android:insetRight="0dp" android:drawable="@drawable/BgMainListButtonPressed" />
     </item>
 
     <item android:state_activated="true">
-        <inset android:insetLeft="5dp" android:insetRight="5dp" android:drawable="@drawable/BgMainListButtonSelected" />
+        <inset android:insetLeft="0dp" android:insetRight="0dp" android:drawable="@drawable/BgMainListButtonSelected" />
     </item>
 
     <item android:state_checked="true">
-        <inset android:insetLeft="5dp" android:insetRight="5dp" android:drawable="@drawable/BgMainListButtonPressed" />
+        <inset android:insetLeft="0dp" android:insetRight="0dp" android:drawable="@drawable/BgMainListButtonPressed" />
     </item>
 
     <item>
-        <inset android:insetLeft="5dp" android:insetRight="5dp" android:drawable="@drawable/BgMainListButton" />
+        <inset android:insetLeft="0dp" android:insetRight="0dp" android:drawable="@drawable/BgMainListButton" />
     </item>
 </selector>

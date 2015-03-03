@@ -32,11 +32,11 @@ namespace Toggl.Ross.Data
         {
             get {
                 if (nsUserDefaults == null) {
-<<<<<<< HEAD
+                    <<<<<<< HEAD
                     nsUserDefaults = new NSUserDefaults ("group." + NSBundle.MainBundle.BundleIdentifier, NSUserDefaultsType.SuiteName);
-=======
-                    nsUserDefaults = new NSUserDefaults ("group.com.toggl.timer", NSUserDefaultsType.SuiteName);
->>>>>>> New app widget structure.
+                    =======
+                        nsUserDefaults = new NSUserDefaults ("group.com.toggl.timer", NSUserDefaultsType.SuiteName);
+                    >>>>>>> New app widget structure.
                 }
                 return nsUserDefaults;
             }
@@ -52,12 +52,12 @@ namespace Toggl.Ross.Data
 
             var authManager = ServiceContainer.Resolve<AuthManager>();
             SetUserLogged (authManager.IsAuthenticated);
-<<<<<<< HEAD
+            <<<<<<< HEAD
             SetAppActivated (true);
             SetAppOnBackground (false);
-=======
->>>>>>> New app widget structure.
-            rootController = UIApplication.SharedApplication.KeyWindow.RootViewController;
+            =======
+                >>>>>>> New app widget structure.
+                rootController = UIApplication.SharedApplication.KeyWindow.RootViewController;
         }
 
         #region IWidgetUpdateService implementation
@@ -82,7 +82,7 @@ namespace Toggl.Ross.Data
             UpdateWidgetContent();
         }
 
-<<<<<<< HEAD
+        <<<<<<< HEAD
         public void SetAppActivated (bool isActivated)
         {
             UserDefaults.SetBool (isActivated, AppActiveEntryKey);
@@ -97,36 +97,33 @@ namespace Toggl.Ross.Data
 
         public void ShowNewTimeEntryScreen (TimeEntryModel currentTimeEntry)
         {
-=======
-        public void ShowNewTimeEntryScreen (TimeEntryModel currentTimeEntry)
-        {
->>>>>>> New app widget structure.
-            var topVCList = new List<UIViewController> (rootController.ChildViewControllers);
-            if (topVCList.Count > 0) {
-                // Get current VC's navigation
-                var controllers = new List<UIViewController> (topVCList[0].NavigationController.ViewControllers);
-                controllers.Add (new EditTimeEntryViewController (currentTimeEntry));
-                if (ServiceContainer.Resolve<SettingsStore> ().ChooseProjectForNew) {
-                    controllers.Add (new ProjectSelectionViewController (currentTimeEntry));
+            =======
+            public void ShowNewTimeEntryScreen (TimeEntryModel currentTimeEntry) {
+                >>>>>>> New app widget structure.
+                var topVCList = new List<UIViewController> (rootController.ChildViewControllers);
+                if (topVCList.Count > 0) {
+                    // Get current VC's navigation
+                    var controllers = new List<UIViewController> (topVCList[0].NavigationController.ViewControllers);
+                    controllers.Add (new EditTimeEntryViewController (currentTimeEntry));
+                    if (ServiceContainer.Resolve<SettingsStore> ().ChooseProjectForNew) {
+                        controllers.Add (new ProjectSelectionViewController (currentTimeEntry));
+                    }
+                    topVCList[0].NavigationController.SetViewControllers (controllers.ToArray (), true);
                 }
-                topVCList[0].NavigationController.SetViewControllers (controllers.ToArray (), true);
             }
-        }
 
-        public Guid GetEntryIdStarted ()
-        {
-            Guid entryId;
-            Guid.TryParse (UserDefaults.StringForKey (StartedEntryKey), out entryId);
-            return entryId;
-        }
+            public Guid GetEntryIdStarted () {
+                Guid entryId;
+                Guid.TryParse (UserDefaults.StringForKey (StartedEntryKey), out entryId);
+                return entryId;
+            }
 
-        public void UpdateWidgetContent()
-        {
-            var controller = NCWidgetController.GetWidgetController ();
-            controller.SetHasContent (true, NSBundle.MainBundle.BundleIdentifier + ".today");
-        }
+            public void UpdateWidgetContent() {
+                var controller = NCWidgetController.GetWidgetController ();
+                controller.SetHasContent (true, NSBundle.MainBundle.BundleIdentifier + ".today");
+            }
 
-        #endregion
+            #endregion
+        }
     }
-}
 

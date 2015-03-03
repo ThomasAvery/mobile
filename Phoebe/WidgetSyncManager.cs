@@ -169,10 +169,11 @@ namespace Toggl.Phoebe
                         Color = ProjectModel.HexColors [ project.Color % ProjectModel.HexColors.Length],
                         IsRunning = entry.State == TimeEntryState.Running,
                         TimeValue = (entry.StopTime - entry.StartTime).ToString(),
+                        StartTime = entry.StartTime,
                     });
 
                 }
-                    
+
                 widgetUpdateService.LastEntries = widgetEntries;
 
             } catch (Exception exc) {
@@ -247,6 +248,8 @@ namespace Toggl.Phoebe
             public string Color { get; set; }
 
             public bool IsRunning { get; set; }
+
+            public DateTime StartTime { get; set; }
         }
     }
 }

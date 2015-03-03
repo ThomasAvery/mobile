@@ -11,11 +11,11 @@ namespace Toggl.Joey.Widget
 {
     public class WidgetUpdateService : IWidgetUpdateService
     {
-        private Context ctx;
+        private Context context;
 
         public WidgetUpdateService (Context ctx)
         {
-            this.ctx = ctx;
+            this.context = ctx;
 
             // Update auth state from platform service.
             //
@@ -29,6 +29,12 @@ namespace Toggl.Joey.Widget
 
         #region IWidgetUpdateService implementation
 
+        public bool AppActivated { get; set; }
+
+        public bool AppOnBackground { get;  set; }
+
+        public string RunningEntryDuration { get; set; }
+
         private List<WidgetSyncManager.WidgetEntryData> lastEntries;
 
         public List<WidgetSyncManager.WidgetEntryData> LastEntries
@@ -40,23 +46,7 @@ namespace Toggl.Joey.Widget
                 return lastEntries;
             } set {
                 lastEntries = value;
-                UpdateWidgetContent (WidgetProvider.RefreshListAction);
-            }
-        }
-
-        private string runningEntryDuration;
-
-        public string RunningEntryDuration
-        {
-            get {
-                return runningEntryDuration;
-            } set {
-                if ( string.Compare (runningEntryDuration, value, StringComparison.Ordinal) == 0) {
-                    return;
-                }
-
-                runningEntryDuration = value;
-                UpdateWidgetContent (WidgetProvider.RefreshTimeAction);
+                WidgetProvider.RefreshWidget (context, WidgetProvider.RefreshListAction);
             }
         }
 
@@ -70,32 +60,18 @@ namespace Toggl.Joey.Widget
                 if (isUserLogged == value) {
                     return;
                 }
-
                 isUserLogged = value;
-                UpdateWidgetContent (AppWidgetManager.ActionAppwidgetUpdate);
+                WidgetProvider.RefreshWidget (context, WidgetProvider.RefreshCompleteAction);
             }
         }
 
         public void ShowNewTimeEntryScreen ( TimeEntryModel currentTimeEntry)
         {
-
         }
 
         public Guid GetEntryIdStarted ()
         {
             return new Guid();
-        }
-
-        public void UpdateWidgetContent (string action)
-        {
-            var intent = new Intent (ctx, typeof (WidgetProvider));
-            intent.SetAction (action);
-
-            var widgetManager = AppWidgetManager.GetInstance (ctx);
-            int[] appWidgetIds = widgetManager.GetAppWidgetIds (new ComponentName (ctx, Java.Lang.Class.FromType (typeof (WidgetProvider))));
-            intent.PutExtra (AppWidgetManager.ExtraAppwidgetIds, appWidgetIds);
-
-            ctx.SendBroadcast (intent);
         }
 
         #endregion

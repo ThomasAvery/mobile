@@ -140,10 +140,11 @@
     <Compile Include="UI\Fragments\CreateTagDialogFragment.cs" />
     <Compile Include="UI\Views\SnappyLayout.cs" />
     <Compile Include="UI\Utils\Pool.cs" />
-    <Compile Include="StartNewTimeEntryService.cs" />
     <Compile Include="Widget\WidgetProvider.cs" />
     <Compile Include="Widget\WidgetUpdateService.cs" />
     <Compile Include="Widget\WidgetListService.cs" />
+    <Compile Include="Widget\WidgetService.cs" />
+    <Compile Include="StartNewTimeEntryService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />

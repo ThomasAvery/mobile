@@ -12,9 +12,9 @@ namespace Toggl.Phoebe
 
         bool IsUserLogged { get; set; }
 
-        void SetAppActivated (bool isActivated);
+        bool AppActivated { get; set; }
 
-        void SetAppOnBackground (bool isBackground);
+        bool AppOnBackground { get; set; }
 
         void ShowNewTimeEntryScreen (TimeEntryModel currentTimeEntry);
 

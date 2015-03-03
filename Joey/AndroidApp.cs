@@ -55,8 +55,8 @@ namespace Toggl.Joey
             ServiceContainer.Register<ILogger> (() => new Logger ());
             ServiceContainer.Register<Context> (this);
             ServiceContainer.Register<IPlatformInfo> (this);
-            ServiceContainer.Register<SettingsStore> (() => new SettingsStore (Context));
             ServiceContainer.Register<IWidgetUpdateService> (() => new WidgetUpdateService (Context));
+            ServiceContainer.Register<SettingsStore> (() => new SettingsStore (Context));
             ServiceContainer.Register<ISettingsStore> (() => ServiceContainer.Resolve<SettingsStore> ());
             ServiceContainer.Register<ExperimentManager> (() => new ExperimentManager (
                 typeof (Toggl.Phoebe.Analytics.Experiments),

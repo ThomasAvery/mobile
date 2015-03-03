@@ -8,6 +8,8 @@ using Android.Text;
 using Android.Text.Style;
 using Android.Views;
 using Android.Widget;
+using Toggl.Joey.UI.Utils;
+using Toggl.Joey.UI.Views;
 using Toggl.Phoebe;
 using Toggl.Phoebe.Data;
 using Toggl.Phoebe.Data.Models;
@@ -15,8 +17,6 @@ using Toggl.Phoebe.Data.Utils;
 using Toggl.Phoebe.Data.Views;
 using Toggl.Phoebe.Logging;
 using XPlatUtils;
-using Toggl.Joey.UI.Utils;
-using Toggl.Joey.UI.Views;
 using Fragment = Android.Support.V4.App.Fragment;
 using MeasureSpec = Android.Views.View.MeasureSpec;
 

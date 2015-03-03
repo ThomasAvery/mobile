@@ -158,7 +158,6 @@ namespace Toggl.Phoebe.Data
             }
 
             var userId = currentUserId.Value;
-            var store = ServiceContainer.Resolve<IDataStore> ();
 
             // Load data:
             var draftModel = await TimeEntryModel.GetDraftAsync ();

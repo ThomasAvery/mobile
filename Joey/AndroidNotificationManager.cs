@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 using Android.App;
 using Android.Content;
+using Toggl.Joey.Data;
+using Toggl.Joey.UI.Activities;
 using Toggl.Phoebe;
 using Toggl.Phoebe.Data;
 using Toggl.Phoebe.Data.DataObjects;
@@ -9,8 +11,6 @@ using Toggl.Phoebe.Data.Models;
 using Toggl.Phoebe.Data.Utils;
 using Toggl.Phoebe.Net;
 using XPlatUtils;
-using Toggl.Joey.Data;
-using Toggl.Joey.UI.Activities;
 using NotificationCompat = Android.Support.V4.App.NotificationCompat;
 
 namespace Toggl.Joey

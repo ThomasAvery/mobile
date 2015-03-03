@@ -10,6 +10,7 @@
     <color name="bright_red">#ff3c47</color>
     <color name="action_bar_duration_time">#858585</color>
     <color name="dark_gray_text">#3d3d3d</color>
+    <color name="list_item_gray_text">#313131</color>
     <color name="background_light_gray">#f2f2f2</color>
     <color name="drawer_serparator_gray">#ebebeb</color>
     <color name="project_list_gray">#878787</color>

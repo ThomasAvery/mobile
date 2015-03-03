@@ -342,6 +342,7 @@ namespace Toggl.Joey.UI.Adapters
                     ClientTextView.Text = DataSource.Project.Client.Name;
                     ClientTextView.Visibility = ViewStates.Visible;
                 } else {
+                    ClientTextView.Text = String.Empty;
                     ClientTextView.Visibility = ViewStates.Gone;
                 }
 
@@ -414,7 +415,7 @@ namespace Toggl.Joey.UI.Adapters
                 if (DataSource.State == TimeEntryState.Running) {
                     ContinueImageButton.SetImageResource (Resource.Drawable.IcStop);
                 } else {
-                    ContinueImageButton.SetImageResource (Resource.Drawable.IcContinue);
+                    ContinueImageButton.SetImageResource (Resource.Drawable.IcPlayArrowGrey);
                 }
             }
 

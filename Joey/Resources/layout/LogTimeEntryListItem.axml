@@ -5,69 +5,65 @@
     <View
         android:id="@+id/ColorView"
         android:layout_width="4dp"
-        android:layout_height="60dp"
+        android:layout_height="72dp"
         android:background="@drawable/ColoredSideShape"
-        android:layout_marginRight="12dp" />
+        android:layout_marginRight="28dp" />
     <TextView
         android:id="@+id/ClientTextView"
         style="@style/TimeEntryListItem.Text.Client"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:paddingRight="8dp"
-        android:paddingTop="9dp" />
+        android:paddingTop="17dp" />
     <TextView
         android:id="@+id/ProjectTextView"
         style="@style/TimeEntryListItem.Text.Project"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:text="Project"
-        android:paddingTop="5dp" />
+        android:paddingTop="17dp" />
     <TextView
         android:id="@+id/TaskTextView"
         style="@style/TimeEntryListItem.Text.Task"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:paddingTop="32dp"
-        android:paddingRight="5dp" />
+        android:paddingTop="36dp" />
     <TextView
         android:id="@+id/DescriptionTextView"
         style="@style/TimeEntryListItem.Text.Description"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:text="@string/RecentTimeEntryNoDescription"
-        android:paddingTop="32dp" />
+        android:paddingTop="36dp" />
     <ImageView
         android:id="@+id/TagsIcon"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingLeft="3dp"
-        android:paddingRight="3dp"
-        android:paddingTop="15dp"
+        android:layout_height="72dp"
+        android:gravity="center"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
         android:src="@drawable/IcTagsMiniGray" />
     <ImageView
         android:id="@+id/BillableIcon"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingRight="7dp"
-        android:paddingTop="13dp"
+        android:layout_height="72dp"
+        android:paddingRight="5dp"
+        android:gravity="center"
         android:src="@drawable/IcBillableMiniGray" />
     <TextView
         android:id="@+id/DurationTextView"
         style="@style/TimeEntryListItem.Text.Duration"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingTop="10dp"
-        android:paddingRight="10dp"
+        android:layout_height="72dp"
+        android:paddingRight="12dp"
+        android:gravity="center"
+        android:layout_alignParentTop="true"
         android:text="04:15:34" />
-    <View
-        android:layout_width="1dp"
-        android:layout_height="60dp"
-        android:background="#ECECEC"
-        android:id="@+id/ContinueButtonSeparator" />
     <ImageButton
-        android:src="@drawable/IcContinue"
-        android:layout_width="46dp"
-        android:layout_height="60dp"
+        android:src="@drawable/IcPlayArrowGrey"
+        android:layout_width="wrap_content"
+        android:layout_height="72dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="32dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:id="@+id/ContinueImageButton"

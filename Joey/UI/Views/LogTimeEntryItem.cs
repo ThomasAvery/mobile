@@ -123,12 +123,14 @@ namespace Toggl.Joey.UI.Views
             }
 
             int usableWidthFirstLine = durationBar - paddingLeft;
-            int firstWidth = GetFirstElementWidth (usableWidthFirstLine, projectTextView.MeasuredWidth);
+            int firstWidth = 0;
 
-            LayoutView (projectTextView, paddingLeft, currentTop, firstWidth, projectTextView.MeasuredHeight);
             if (clientTextView.Text != String.Empty) {
-                LayoutView (clientTextView, paddingLeft + firstWidth, currentTop, GetSecondElementWidth (usableWidthFirstLine, projectTextView.MeasuredWidth, clientTextView.MeasuredWidth), clientTextView.MeasuredHeight);
+                firstWidth = GetFirstElementWidth (usableWidthFirstLine, clientTextView.MeasuredWidth);
+                LayoutView (clientTextView, paddingLeft, currentTop, firstWidth, clientTextView.MeasuredHeight);
             }
+
+            LayoutView (projectTextView, paddingLeft + firstWidth, currentTop, GetSecondElementWidth (usableWidthFirstLine, firstWidth, projectTextView.MeasuredWidth), projectTextView.MeasuredHeight);
             topFadeRect = new Rectangle (
                 usableWidthFirstLine + paddingLeft, currentTop,
                 0, Math.Max (projectTextView.MeasuredHeight, clientTextView.MeasuredHeight)
